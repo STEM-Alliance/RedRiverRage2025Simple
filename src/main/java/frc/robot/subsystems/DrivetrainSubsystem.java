@@ -9,25 +9,25 @@ import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.units.Units;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
-import frc.robot.LoggedNumber;
-import frc.robot.SwerveModule;
+import frc.robot.utils.DataLogHelpers;
 import frc.robot.Constants;
+import frc.robot.misc.SwerveModule;
 
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.path.PathPlannerPath;
+import com.pathplanner.lib.config.PIDConstants;
+import com.pathplanner.lib.config.RobotConfig;
+import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.util.PathPlannerLogging;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-
-import java.math.*;
 
 public class DrivetrainSubsystem extends SubsystemBase {
   // https://pathplanner.dev/pplib-build-an-auto.html#create-a-sendablechooser-with-all-autos-in-project
@@ -64,19 +64,12 @@ public class DrivetrainSubsystem extends SubsystemBase {
 
   boolean m_turbo = false;
 
-  private final SwerveDriveOdometry m_odometry =
-    new SwerveDriveOdometry(
-        m_kinematics,
-        m_pigeon2.getRotation2d(),
-        getModulePositions());
-
-  private final SwerveDrivePoseEstimator m_poseEstimator =
-    new SwerveDrivePoseEstimator(
-      m_kinematics,
-      m_pigeon2.getRotation2d(),
-      getModulePositions(),
-      new Pose2d()
-    );
+  private final SwerveDrivePoseEstimator m_poseEstimator = new SwerveDrivePoseEstimator(
+    m_kinematics,
+    m_pigeon2.getRotation2d(),
+    getModulePositions(),
+    new Pose2d()
+  );
 
   private final Field2d m_field = new Field2d();
   double m_desiredAngle = 0;
@@ -92,6 +85,41 @@ public class DrivetrainSubsystem extends SubsystemBase {
     // Actual deviations are 0.5, over time odometry becomes less accurate?
     // Deviaton for rotation should be Double.POSITIVE_INFINITY
     m_poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(0.05, 0.05, Double.POSITIVE_INFINITY));
+
+    RobotConfig config;
+
+    try {
+      config = RobotConfig.fromGUISettings();
+    } catch (Exception e) {
+      e.printStackTrace();
+
+      // TODO find a better solution
+      config = new RobotConfig(null, null, null, null, null);
+    }
+
+    AutoBuilder.configure(
+              this::getPose, // Robot pose supplier
+              this::resetPose, // Method to reset odometry (will be called if your auto has a starting pose)
+              this::getChassisSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
+              (speeds, feedforwards) -> driveRobotSpeeds(speeds), // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds. Also optionally outputs individual module feedforwards
+              new PPHolonomicDriveController( // PPHolonomicController is the built in path following controller for holonomic drive trains
+                      new PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
+                      new PIDConstants(5.0, 0.0, 0.0) // Rotation PID constants
+              ),
+              config, // The robot configuration
+              () -> {
+                // Boolean supplier that controls when the path will be mirrored for the red alliance
+                // This will flip the path being followed to the red side of the field.
+                // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
+
+                var alliance = DriverStation.getAlliance();
+                if (alliance.isPresent()) {
+                  return alliance.get() == DriverStation.Alliance.Red;
+                }
+                return false;
+              },
+              this // Reference to this subsystem to set requirements
+      );
 
     // TODO: Fixme
     // https://github.com/mjansen4857/pathplanner/tree/main/examples
@@ -118,25 +146,23 @@ public class DrivetrainSubsystem extends SubsystemBase {
     //   this);
 
     //       // Set up custom logging to add the current path to a field 2d widget
-    // PathPlannerLogging.setLogActivePathCallback((poses) -> m_field.getObject("path").setPoses(poses));
+    PathPlannerLogging.setLogActivePathCallback((poses) -> m_field.getObject("path").setPoses(poses));
   }
 
   public void periodic() {
     updateOdometry();
     m_field.setRobotPose(getPose());
 
-    // TODO: Fixme
-    //LoggedNumber.getInstance().logNumber("pig_yaw", m_pigeon2.getYaw().getValue());
-    LoggedNumber.getInstance().logNumber("pig_angle", m_pigeon2.getAngle());
-    LoggedNumber.getInstance().logNumber("RobotPoseX", getPose().getX());
-    LoggedNumber.getInstance().logNumber("RobotPoseY", getPose().getY());
-    LoggedNumber.getInstance().logNumber("RobotPoseDeg", getPose().getRotation().getDegrees());
-    LoggedNumber.getInstance().logNumber("RobotPoseX2", m_poseEstimator.getEstimatedPosition().getX());
-    LoggedNumber.getInstance().logNumber("RobotPoseY2", m_poseEstimator.getEstimatedPosition().getY());
-    LoggedNumber.getInstance().logNumber("RobotPoseDeg2", m_poseEstimator.getEstimatedPosition().getRotation().getDegrees());
-    LoggedNumber.getInstance().logNumber("FieldX", m_field.getRobotPose().getX());
-    LoggedNumber.getInstance().logNumber("FieldY", m_field.getRobotPose().getY());
-    LoggedNumber.getInstance().logNumber("FieldRot", m_field.getRobotPose().getRotation().getDegrees());
+    DataLogHelpers.logDouble(m_pigeon2.getYaw().getValue().in(Units.Degrees), "Pigeon2Yaw");
+    DataLogHelpers.logDouble(getPose().getX(), "RobotPoseX");
+    DataLogHelpers.logDouble(getPose().getY(), "RobotPoseY");
+    DataLogHelpers.logDouble(getPose().getRotation().getDegrees(), "RobotPoseDeg");
+    DataLogHelpers.logDouble(m_poseEstimator.getEstimatedPosition().getX(), "RobotPoseX2");
+    DataLogHelpers.logDouble(m_poseEstimator.getEstimatedPosition().getY(), "RobotPoseY2");
+    DataLogHelpers.logDouble(m_poseEstimator.getEstimatedPosition().getRotation().getDegrees(), "RobotPoseDeg2");
+    DataLogHelpers.logDouble(m_field.getRobotPose().getX(), "FieldX");
+    DataLogHelpers.logDouble(m_field.getRobotPose().getY(), "FieldY");
+    DataLogHelpers.logDouble(m_field.getRobotPose().getRotation().getDegrees(), "FieldRot");
     SmartDashboard.putData("Field", m_field);
   }
 
@@ -166,12 +192,9 @@ public class DrivetrainSubsystem extends SubsystemBase {
 
     for (int i = 0; i < 4; i++) {
       m_modules[i].setDesiredState(swerveModuleStates[i]);
-      LoggedNumber.getInstance().logNumber("Swerve_" + i + "_drive", swerveModuleStates[i].speedMetersPerSecond);
-      LoggedNumber.getInstance().logNumber("Swerve_" + i + "_angle", swerveModuleStates[i].angle.getDegrees());
+      DataLogHelpers.logDouble(swerveModuleStates[i].speedMetersPerSecond, "Swerve_" + i + "_drive");
+      DataLogHelpers.logDouble(swerveModuleStates[i].angle.getDegrees(), "Swerve_" + i + "_angle");
     }
-    // LoggedNumber.getInstance().logNumber("Vx", xSpeed);
-    // LoggedNumber.getInstance().logNumber("Vy", ySpeed);
-    // LoggedNumber.getInstance().logNumber("Omega", rot);
   }
 
   public void driveFieldSpeeds(ChassisSpeeds fieldSpeeds) {
@@ -186,9 +209,9 @@ public class DrivetrainSubsystem extends SubsystemBase {
     var targetSpeeds = ChassisSpeeds.discretize(robotSpeeds, 0.02);
     var swerveModuleStates = m_kinematics.toSwerveModuleStates(targetSpeeds);
 
-    LoggedNumber.getInstance().logNumber("Vx", robotSpeeds.vxMetersPerSecond);
-    LoggedNumber.getInstance().logNumber("Vy", robotSpeeds.vyMetersPerSecond);
-    LoggedNumber.getInstance().logNumber("Omega", robotSpeeds.omegaRadiansPerSecond);
+    DataLogHelpers.logDouble(robotSpeeds.vxMetersPerSecond, "Vx");
+    DataLogHelpers.logDouble(robotSpeeds.vyMetersPerSecond, "Vy");
+    DataLogHelpers.logDouble(robotSpeeds.omegaRadiansPerSecond, "Omega");
 
     SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, Constants.kMaxSpeed);
 
@@ -220,7 +243,6 @@ public class DrivetrainSubsystem extends SubsystemBase {
 
   /** Updates the field relative position of the robot. */
   public void updateOdometry() {
-    m_odometry.update(m_pigeon2.getRotation2d(), getModulePositions());
     m_poseEstimator.update(m_pigeon2.getRotation2d(), getModulePositions());
   }
 
@@ -235,7 +257,6 @@ public class DrivetrainSubsystem extends SubsystemBase {
 
   public void resetPose(Pose2d resetPose) {
     System.out.println("Reset pose to " + resetPose);
-    m_odometry.resetPosition(m_pigeon2.getRotation2d(), getModulePositions(), resetPose);
     m_poseEstimator.resetPosition(m_pigeon2.getRotation2d(), getModulePositions(), resetPose);
   }
 
@@ -244,21 +265,12 @@ public class DrivetrainSubsystem extends SubsystemBase {
   }
 
   public double getContinuousHeading() {
-    return m_pigeon2.getAngle();
+    return m_pigeon2.getYaw().getValue().in(Units.Degrees);
   }
 
   public Command resetGyro() {
     return new InstantCommand(() -> {m_pigeon2.reset();});
   }
-
-  // TODO: Fixme
-  // public Command runPath() {
-  //   // // Load the path you want to follow using its name in the GUI
-  //   PathPlannerPath path = PathPlannerPath.fromPathFile("Test1_Straight");
-
-  //   // // Create a path following command using AutoBuilder. This will also trigger event markers.
-  //   return AutoBuilder.followPath(path);
-  // }
 
   private void setBrakeMode(boolean enabled) {
     for (int i = 0; i < 4; i++) {

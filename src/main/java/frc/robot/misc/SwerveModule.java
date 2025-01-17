@@ -2,7 +2,7 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package frc.robot;
+package frc.robot.misc;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
@@ -12,6 +12,9 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.AnalogEncoder;
+import frc.robot.Constants;
+import frc.robot.utils.DataLogHelpers;
+
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
@@ -19,7 +22,6 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
-import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.RelativeEncoder;
 
 public class SwerveModule {
@@ -78,35 +80,24 @@ public class SwerveModule {
     SparkMaxConfig driveConfig = new SparkMaxConfig();
 
     driveConfig
-      .inverted(true)
-      .idleMode(IdleMode.kBrake);
+      .idleMode(IdleMode.kCoast)
+      .smartCurrentLimit(Constants.NeoLimit);
     driveConfig.encoder
       .positionConversionFactor(2 * Math.PI * Constants.kWheelRadius / Constants.kDriveGearReduction)
       .velocityConversionFactor(2 * Math.PI * Constants.kWheelRadius / Constants.kDriveGearReduction / 60);
-    driveConfig.closedLoop
-      .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-      .pid(1.0, 0.0, 0.0);
         
     m_driveMotor.configure(driveConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
     SparkMaxConfig turnConfig = new SparkMaxConfig();
 
-    driveConfig
-      .inverted(true)
-      .idleMode(IdleMode.kBrake);
-    driveConfig.encoder
+    turnConfig
+      .idleMode(IdleMode.kBrake)
+      .smartCurrentLimit(Constants.NeoLimit);
+      turnConfig.encoder
       .positionConversionFactor(2 * Math.PI / Constants.kTurningGearReduction)
       .velocityConversionFactor(2 * Math.PI / Constants.kTurningGearReduction / 60);
-    driveConfig.closedLoop
-      .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-      .pid(1.0, 0.0, 0.0);
 
-    m_turningMotor.configure(turnConfig, null, null);
-    // m_turningMotor.setIdleMode(IdleMode.kBrake);
-    // m_driveMotor.setIdleMode(IdleMode.kBrake);
-
-    // m_driveMotor.setSmartCurrentLimit(Constants.NeoLimit);
-    // m_turningMotor.setSmartCurrentLimit(Constants.NeoLimit);
+    m_turningMotor.configure(turnConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
     m_absolutePos = new AnalogEncoder(analogInputChannel);
 
@@ -148,38 +139,35 @@ public class SwerveModule {
    * @param desiredState Desired state with speed and angle.
    */
   public void setDesiredState(SwerveModuleState desiredState) {
-      var encoderRotation = new Rotation2d(m_turningEncoder.getPosition());
+    Rotation2d encoderRotation = new Rotation2d(m_turningEncoder.getPosition());
 
-      // Optimize the reference state to avoid spinning further than 90 degrees
-      SwerveModuleState state = SwerveModuleState.optimize(desiredState, encoderRotation);
+    // Optimizing the state prevents rotations more than 90 degrees.
+    desiredState.optimize(encoderRotation);
 
-      // Scale speed by cosine of angle error. This scales down movement perpendicular to the desired
-      // direction of travel that can occur when modules change directions. This results in smoother
-      // driving.
-      state.speedMetersPerSecond *= state.angle.minus(encoderRotation).getCos();
+    // TODO: In autonomous, disabling this could make it more precise?
+    // Scale speed by cosine of angle error. This scales down movement perpendicular to the desired
+    // direction of travel that can occur when modules change directions. This results in smoother
+    // driving.
+    desiredState.speedMetersPerSecond *= desiredState.angle.minus(encoderRotation).getCos();
 
-      // Calculate the drive output from the drive PID controller.
-      final double driveOutput =
-          m_drivePIDController.calculate(m_driveEncoder.getVelocity(), state.speedMetersPerSecond);
+    // Calculate the drive output from the drive PID controller.
+    final double drivePID =
+        m_drivePIDController.calculate(m_driveEncoder.getVelocity(), desiredState.speedMetersPerSecond);
 
-      final double driveFeedforward = m_driveFeedforward.calculate(state.speedMetersPerSecond);
+    final double driveFF = m_driveFeedforward.calculate(desiredState.speedMetersPerSecond);
 
-      // Calculate the turning motor output from the turning PID controller.
-      final double turnOutput =
-          m_turningPIDController.calculate(m_turningEncoder.getPosition(), state.angle.getRadians());
+    // Calculate the turning motor output from the turning PID controller.
+    final double turnPID =
+      m_turningPIDController.calculate(m_turningEncoder.getPosition(), desiredState.angle.getRadians());
 
-      final double turnFeedforward =
-          m_turnFeedforward.calculate(m_turningPIDController.getSetpoint().velocity);
+    final double turnFF = m_turnFeedforward.calculate(m_turningPIDController.getSetpoint().velocity);
 
-      //m_driveMotor.set(driveOutput + driveFeedforward);
-      m_driveMotor.set(driveFeedforward);
-      //m_turningMotor.set(turnOutput + turnFeedforward);
-      var turningMotorOutput = turnOutput + turnFeedforward;
-      m_turningMotor.set(turningMotorOutput);
+    m_driveMotor.set(drivePID + driveFF);
+    m_turningMotor.set(turnPID + turnFF);
 
-      LoggedNumber.getInstance().logNumber("Swerve_rot_enc_" + m_swerveIndex, m_turningEncoder.getPosition());
-      LoggedNumber.getInstance().logNumber("Swerve_drive_pos_" + m_swerveIndex, m_driveEncoder.getPosition());
-      LoggedNumber.getInstance().logNumber("Swerve_drive_vel_" + m_swerveIndex, m_driveEncoder.getVelocity());
+    DataLogHelpers.logDouble(m_turningEncoder.getPosition(), "Swerve_rot_enc_" + m_swerveIndex);
+    DataLogHelpers.logDouble(m_driveEncoder.getPosition(), "Swerve_drive_pos_" + m_swerveIndex);
+    DataLogHelpers.logDouble(m_driveEncoder.getVelocity(), "Swerve_drive_vel_" + m_swerveIndex);
   }
 
   public void setGains(double kp, double ki, double kd, double ks, double kv) {
