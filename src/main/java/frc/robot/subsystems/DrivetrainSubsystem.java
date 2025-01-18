@@ -103,8 +103,8 @@ public class DrivetrainSubsystem extends SubsystemBase {
               this::getChassisSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
               (speeds, feedforwards) -> driveRobotSpeeds(speeds), // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds. Also optionally outputs individual module feedforwards
               new PPHolonomicDriveController( // PPHolonomicController is the built in path following controller for holonomic drive trains
-                      new PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
-                      new PIDConstants(5.0, 0.0, 0.0) // Rotation PID constants
+                      new PIDConstants(3.5, 0.0, 0.0), // Translation PID constants
+                      new PIDConstants(2.25, 0.0, 0.0) // Rotation PID constants
               ),
               config, // The robot configuration
               () -> {
@@ -164,6 +164,8 @@ public class DrivetrainSubsystem extends SubsystemBase {
     DataLogHelpers.logDouble(m_field.getRobotPose().getY(), "FieldY");
     DataLogHelpers.logDouble(m_field.getRobotPose().getRotation().getDegrees(), "FieldRot");
     SmartDashboard.putData("Field", m_field);
+    SmartDashboard.putNumber("RobotX", getPose().getX());
+    SmartDashboard.putNumber("RobotY", getPose().getY());
   }
 
   public SwerveModule getModule(int offset) {
@@ -205,7 +207,10 @@ public class DrivetrainSubsystem extends SubsystemBase {
   }
 
   public void driveRobotSpeeds(ChassisSpeeds robotSpeeds) {
+    robotSpeeds.vxMetersPerSecond = -robotSpeeds.vxMetersPerSecond;
+    robotSpeeds.vyMetersPerSecond = -robotSpeeds.vyMetersPerSecond;
     robotSpeeds.omegaRadiansPerSecond = -robotSpeeds.omegaRadiansPerSecond;
+
     var targetSpeeds = ChassisSpeeds.discretize(robotSpeeds, 0.02);
     var swerveModuleStates = m_kinematics.toSwerveModuleStates(targetSpeeds);
 

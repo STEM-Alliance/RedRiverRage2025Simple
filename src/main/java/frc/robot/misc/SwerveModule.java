@@ -12,11 +12,11 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.AnalogEncoder;
+import edu.wpi.first.wpilibj.DriverStation;
 import frc.robot.Constants;
 import frc.robot.utils.DataLogHelpers;
 
 import com.revrobotics.spark.SparkMax;
-import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
@@ -120,7 +120,7 @@ public class SwerveModule {
    */
   public SwerveModuleState getState() {
     return new SwerveModuleState(
-        m_driveEncoder.getVelocity(), new Rotation2d(m_turningEncoder.getPosition()));
+        -m_driveEncoder.getVelocity(), new Rotation2d(m_turningEncoder.getPosition()));
   }
 
   /**
@@ -130,7 +130,7 @@ public class SwerveModule {
    */
   public SwerveModulePosition getPosition() {
     return new SwerveModulePosition(
-        m_driveEncoder.getPosition(), new Rotation2d(m_turningEncoder.getPosition()));
+        -m_driveEncoder.getPosition(), new Rotation2d(m_turningEncoder.getPosition()));
   }
 
   /**
@@ -144,11 +144,15 @@ public class SwerveModule {
     // Optimizing the state prevents rotations more than 90 degrees.
     desiredState.optimize(encoderRotation);
 
-    // TODO: In autonomous, disabling this could make it more precise?
     // Scale speed by cosine of angle error. This scales down movement perpendicular to the desired
     // direction of travel that can occur when modules change directions. This results in smoother
     // driving.
-    desiredState.speedMetersPerSecond *= desiredState.angle.minus(encoderRotation).getCos();
+
+    // This is only used in teleop (disabled in autonomous)
+    // since it gives Pathplanner more precise translation control.
+    if (DriverStation.isTeleop()) {
+      desiredState.speedMetersPerSecond *= desiredState.angle.minus(encoderRotation).getCos();
+    }
 
     // Calculate the drive output from the drive PID controller.
     final double drivePID =
