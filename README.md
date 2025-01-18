@@ -10,7 +10,7 @@
   - FRC Driver Station
 
 ## Install Third Party Librariers
-
+  
 1. In VSCode: `CTRL+SHIFT+P` 
 2. then type `WPILib: Manage`
 3. then go down to `Install New librariers (online)`
