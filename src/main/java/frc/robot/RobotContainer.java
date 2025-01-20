@@ -10,7 +10,6 @@ import com.pathplanner.lib.auto.AutoBuilder;
 
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.ApriltagAlignment;
-import frc.robot.commands.Autos;
 import frc.robot.subsystems.DrivetrainSubsystem;
 import frc.robot.subsystems.ExampleSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
@@ -22,6 +21,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import com.pathplanner.lib.auto.*;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -37,7 +37,7 @@ public class RobotContainer {
   private final VisionSubsystem m_photonVison = new VisionSubsystem(m_drivetrain.getPoseEstimator());
 
   private final SendableChooser<Command> m_autoChooser = AutoBuilder.buildAutoChooser();
-
+      
   // Replace with CommandPS4Controller or CommandJoystick if needed
   private final CommandXboxController m_driverController =
       new CommandXboxController(OperatorConstants.kDriverControllerPort);
@@ -47,6 +47,7 @@ public class RobotContainer {
     SmartDashboard.putData("Autonomous", m_autoChooser);
     // Configure the trigger bindings
     configureBindings();
+    configureNamedPaths();
   }
 
   /**
@@ -70,7 +71,9 @@ public class RobotContainer {
     // m_driverController.x();
     m_driverController.x().onTrue(m_drivetrain.resetGyro());
     m_driverController.y().onTrue(new InstantCommand(() -> m_drivetrain.homeSwerve()));
-    m_driverController.a().whileTrue(new ApriltagAlignment(7, 0, 0, m_photonVison, m_drivetrain));
+    //m_driverController.a().whileTrue(new ApriltagAlignment(7, 0, 0, m_photonVison, m_drivetrain));
+    m_driverController.povRight().whileTrue(new ApriltagAlignment(-1, 0.15, 0.25, m_photonVison, m_drivetrain));
+    m_driverController.povLeft().whileTrue(new ApriltagAlignment(-1, -0.15, 0.25, m_photonVison, m_drivetrain));
 
     m_drivetrain.setDefaultCommand(new InstantCommand(() -> {
       Translation2d processedTranslation = ControllerProcessing.getProcessedTranslation(
@@ -88,6 +91,10 @@ public class RobotContainer {
     },
     m_drivetrain
     ));
+  }
+
+  public void configureNamedPaths() {
+    NamedCommands.registerCommand("TargetLeft", new ApriltagAlignment(-1, 0.15, 0.25, m_photonVison, m_drivetrain));
   }
 
   /**

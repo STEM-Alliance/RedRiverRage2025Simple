@@ -84,6 +84,24 @@ public class VisionSubsystem extends SubsystemBase {
         return new PhotonTrackedTarget();
     }
 
+    public PhotonTrackedTarget getCentralTarget() {
+        var results = m_camera.getLatestResult();
+        double xpos = 100;
+        double ypos = 100;
+        double zpos = 100;
+        PhotonTrackedTarget centralTarget = new PhotonTrackedTarget();
+        for (PhotonTrackedTarget target : results.targets) {
+            if ((target.bestCameraToTarget.getMeasureX().baseUnitMagnitude() < xpos) && 
+                (target.bestCameraToTarget.getMeasureY().baseUnitMagnitude() < ypos) && 
+                (target.bestCameraToTarget.getMeasureZ().baseUnitMagnitude() < zpos)) {
+                    centralTarget = target;
+                }
+        }
+
+        return centralTarget;
+    }
+
+
     private void updateVisionData() {
         List<PhotonPipelineResult> cameraResults = m_camera.getAllUnreadResults();
 
