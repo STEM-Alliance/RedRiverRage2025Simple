@@ -21,6 +21,9 @@ This link should be for the Pigeons and SparkMax
 PathPlanner lib:
 `https://3015rangerrobotics.github.io/pathplannerlib/PathplannerLib.json`
 
+PhotonVision lib:
+`https://maven.photonvision.org/repository/internal/org/photonvision/photonlib-json/1.0/photonlib-json-1.0.json`
+
 Repeat steps 1 through 3 then paste:
 `https://www.kauailabs.com/dist/frc/2024/navx_frc.json`
 

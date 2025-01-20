@@ -63,12 +63,12 @@ public class Robot extends TimedRobot {
     final Command autonomous_command = m_robotContainer.getAutonomousCommand();
 
     // TODO: Testing with alerts, this should be removed or improved.
-    if (autonomous_command.getClass() != com.pathplanner.lib.commands.PathPlannerAuto.class) {
-      m_noAutonomousAlert.set(true);
+    if (autonomous_command instanceof PathPlannerAuto) {
+      m_noAutonomousAlert.set(false);
     }
 
     else {
-      m_noAutonomousAlert.set(false);
+      m_noAutonomousAlert.set(true);
     }
   }
 

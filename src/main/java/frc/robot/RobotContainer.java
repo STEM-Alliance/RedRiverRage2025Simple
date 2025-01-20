@@ -9,9 +9,11 @@ import static frc.robot.Constants.*;
 import com.pathplanner.lib.auto.AutoBuilder;
 
 import frc.robot.Constants.OperatorConstants;
+import frc.robot.commands.ApriltagAlignment;
 import frc.robot.commands.Autos;
 import frc.robot.subsystems.DrivetrainSubsystem;
 import frc.robot.subsystems.ExampleSubsystem;
+import frc.robot.subsystems.VisionSubsystem;
 import frc.robot.utils.ControllerProcessing;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -32,6 +34,7 @@ public class RobotContainer {
 
   // The robot's subsystems and commands are defined here...
   private final DrivetrainSubsystem m_drivetrain = new DrivetrainSubsystem();
+  private final VisionSubsystem m_photonVison = new VisionSubsystem(m_drivetrain.getPoseEstimator());
 
   private final SendableChooser<Command> m_autoChooser = AutoBuilder.buildAutoChooser();
 
@@ -67,6 +70,7 @@ public class RobotContainer {
     // m_driverController.x();
     m_driverController.x().onTrue(m_drivetrain.resetGyro());
     m_driverController.y().onTrue(new InstantCommand(() -> m_drivetrain.homeSwerve()));
+    m_driverController.a().whileTrue(new ApriltagAlignment(7, 0, 0, m_photonVison, m_drivetrain));
 
     m_drivetrain.setDefaultCommand(new InstantCommand(() -> {
       Translation2d processedTranslation = ControllerProcessing.getProcessedTranslation(

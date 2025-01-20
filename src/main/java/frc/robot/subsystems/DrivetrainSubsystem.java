@@ -71,6 +71,10 @@ public class DrivetrainSubsystem extends SubsystemBase {
     new Pose2d()
   );
 
+  public SwerveDrivePoseEstimator getPoseEstimator() {
+    return m_poseEstimator;
+  }
+
   private final Field2d m_field = new Field2d();
   double m_desiredAngle = 0;
 
@@ -84,7 +88,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
 
     // Actual deviations are 0.5, over time odometry becomes less accurate?
     // Deviaton for rotation should be Double.POSITIVE_INFINITY
-    m_poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(0.05, 0.05, Double.POSITIVE_INFINITY));
+    m_poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(0.3, 0.3, 2.0 * Math.PI));
 
     RobotConfig config;
 
