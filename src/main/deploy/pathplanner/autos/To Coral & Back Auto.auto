@@ -1,0 +1,49 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Drive Out"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "AlignRightOffset"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "ToCoralPickup"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 2.0
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "FromPickupToReef"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "AlignLeftOffset"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": null,
+  "choreoAuto": false
+}

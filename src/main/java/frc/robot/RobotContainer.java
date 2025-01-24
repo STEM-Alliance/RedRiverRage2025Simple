@@ -36,7 +36,7 @@ public class RobotContainer {
   private final DrivetrainSubsystem m_drivetrain = new DrivetrainSubsystem();
   private final VisionSubsystem m_photonVison = new VisionSubsystem(m_drivetrain.getPoseEstimator());
 
-  private final SendableChooser<Command> m_autoChooser = AutoBuilder.buildAutoChooser();
+  private final SendableChooser<Command> m_autoChooser;
       
   // Replace with CommandPS4Controller or CommandJoystick if needed
   private final CommandXboxController m_driverController =
@@ -44,10 +44,11 @@ public class RobotContainer {
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
+    configureNamedPaths();
+    m_autoChooser =AutoBuilder.buildAutoChooser();
     SmartDashboard.putData("Autonomous", m_autoChooser);
     // Configure the trigger bindings
     configureBindings();
-    configureNamedPaths();
   }
 
   /**
@@ -72,8 +73,8 @@ public class RobotContainer {
     m_driverController.x().onTrue(m_drivetrain.resetGyro());
     m_driverController.y().onTrue(new InstantCommand(() -> m_drivetrain.homeSwerve()));
     //m_driverController.a().whileTrue(new ApriltagAlignment(7, 0, 0, m_photonVison, m_drivetrain));
-    m_driverController.povRight().whileTrue(new ApriltagAlignment(-1, 0.15, 0.25, m_photonVison, m_drivetrain));
-    m_driverController.povLeft().whileTrue(new ApriltagAlignment(-1, -0.15, 0.25, m_photonVison, m_drivetrain));
+    m_driverController.povLeft().whileTrue(new ApriltagAlignment(-1, 0.4, -0.15, m_photonVison, m_drivetrain));
+    m_driverController.povRight().whileTrue(new ApriltagAlignment(-1, 0.4, 0.15, m_photonVison, m_drivetrain));
 
     m_drivetrain.setDefaultCommand(new InstantCommand(() -> {
       Translation2d processedTranslation = ControllerProcessing.getProcessedTranslation(
@@ -94,7 +95,8 @@ public class RobotContainer {
   }
 
   public void configureNamedPaths() {
-    NamedCommands.registerCommand("TargetLeft", new ApriltagAlignment(-1, 0.15, 0.25, m_photonVison, m_drivetrain));
+    NamedCommands.registerCommand("AlignLeftOffset", new ApriltagAlignment(-1, 0.4, -0.15, m_photonVison, m_drivetrain));
+    NamedCommands.registerCommand("AlignRightOffset", new ApriltagAlignment(-1, 0.4, 0.15, m_photonVison, m_drivetrain));
   }
 
   /**

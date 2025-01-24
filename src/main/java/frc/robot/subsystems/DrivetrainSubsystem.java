@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -78,27 +79,27 @@ public class DrivetrainSubsystem extends SubsystemBase {
   private final Field2d m_field = new Field2d();
   double m_desiredAngle = 0;
 
-  /** Creates a new DriveSubSystem. */
-  public DrivetrainSubsystem() {
-    m_pigeon2.reset();
-
-    // Set deviations for the pose estimator vision measurements, rotation is positive infinity since
-    // the gyro will give us more accurate results than the vision system. We should also scale this by the
-    // distance of the tag detected, longer distances will be less accurate so will have less of an effect
-
-    // Actual deviations are 0.5, over time odometry becomes less accurate?
-    // Deviaton for rotation should be Double.POSITIVE_INFINITY
-    m_poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(0.3, 0.3, 2.0 * Math.PI));
-
-    RobotConfig config;
-
-    try {
-      config = RobotConfig.fromGUISettings();
-    } catch (Exception e) {
-      e.printStackTrace();
-
-      // TODO find a better solution
-      config = new RobotConfig(null, null, null, null, null);
+  private RobotConfig m_robotConfig;
+  
+    /** Creates a new DriveSubSystem. */
+    public DrivetrainSubsystem() {
+      m_pigeon2.reset();
+  
+      // Set deviations for the pose estimator vision measurements, rotation is positive infinity since
+      // the gyro will give us more accurate results than the vision system. We should also scale this by the
+      // distance of the tag detected, longer distances will be less accurate so will have less of an effect
+  
+      // Actual deviations are 0.5, over time odometry becomes less accurate?
+      // Deviaton for rotation should be Double.POSITIVE_INFINITY
+      m_poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(1.0, 1.0, 10.0));
+  
+      try {
+        m_robotConfig = RobotConfig.fromGUISettings();
+      } catch (Exception e) {
+        e.printStackTrace();
+  
+        // TODO find a better solution
+        m_robotConfig = new RobotConfig(null, null, null, null, null);
     }
 
     AutoBuilder.configure(
@@ -110,7 +111,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
                       new PIDConstants(3.5, 0.0, 0.0), // Translation PID constants
                       new PIDConstants(2.25, 0.0, 0.0) // Rotation PID constants
               ),
-              config, // The robot configuration
+              m_robotConfig, // The robot configuration
               () -> {
                 // Boolean supplier that controls when the path will be mirrored for the red alliance
                 // This will flip the path being followed to the red side of the field.
@@ -211,9 +212,29 @@ public class DrivetrainSubsystem extends SubsystemBase {
   }
 
   public void driveRobotSpeeds(ChassisSpeeds robotSpeeds) {
+    // TODO: Make the pathplanner GUI speed limit actually limit speed
+    // Use the robot config module config max speeds
+    // Should there be a seperate function for pathplanner drive?
     robotSpeeds.vxMetersPerSecond = -robotSpeeds.vxMetersPerSecond;
     robotSpeeds.vyMetersPerSecond = -robotSpeeds.vyMetersPerSecond;
     robotSpeeds.omegaRadiansPerSecond = -robotSpeeds.omegaRadiansPerSecond;
+
+    if (DriverStation.isAutonomous()) {
+      double maxDriveVelocity = m_robotConfig.moduleConfig.maxDriveVelocityMPS;
+      double maxRotationalVelocity = m_robotConfig.moduleConfig.maxDriveVelocityRadPerSec;
+
+      robotSpeeds.vxMetersPerSecond = MathUtil.clamp(
+        robotSpeeds.vxMetersPerSecond, -maxDriveVelocity, maxDriveVelocity
+      );
+
+      robotSpeeds.vyMetersPerSecond = MathUtil.clamp(
+        robotSpeeds.vyMetersPerSecond, -maxDriveVelocity, maxDriveVelocity
+      );
+
+      robotSpeeds.omegaRadiansPerSecond = MathUtil.clamp(
+        robotSpeeds.omegaRadiansPerSecond, -maxRotationalVelocity, maxRotationalVelocity
+      );
+    }
 
     var targetSpeeds = ChassisSpeeds.discretize(robotSpeeds, 0.02);
     var swerveModuleStates = m_kinematics.toSwerveModuleStates(targetSpeeds);

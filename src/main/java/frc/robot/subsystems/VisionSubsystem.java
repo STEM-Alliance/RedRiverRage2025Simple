@@ -57,21 +57,21 @@ public class VisionSubsystem extends SubsystemBase {
         }
     }
 
-    public double distanceToTag(int apriltag) {
-        var targets = m_camera.getLatestResult().targets;
-        for (PhotonTrackedTarget target : targets) {
-            if (target.fiducialId == apriltag) {
-                return PhotonUtils.calculateDistanceToTargetMeters(
-                    0.2667, //10.5 INCHES
-                    0.2667,
-                    0.0,
-                    Units.degreesToRadians(target.getPitch())
-                );
-            }
-        }
+    // public double distanceToTag(int apriltag) {
+    //     var targets = m_camera.getLatestResult().targets;
+    //     for (PhotonTrackedTarget target : targets) {
+    //         if (target.fiducialId == apriltag) {
+    //             return PhotonUtils.calculateDistanceToTargetMeters(
+    //                 0.2667, //10.5 INCHES
+    //                 0.2667,
+    //                 0.0,
+    //                 Units.degreesToRadians(target.getPitch())
+    //             );
+    //         }
+    //     }
 
-        return Double.NaN;
-    }
+    //     return Double.NaN;
+    // }
 
     public PhotonTrackedTarget getTarget(int apriltag) {
         var results = m_camera.getLatestResult();
@@ -84,23 +84,20 @@ public class VisionSubsystem extends SubsystemBase {
         return new PhotonTrackedTarget();
     }
 
-    public PhotonTrackedTarget getCentralTarget() {
-        var results = m_camera.getLatestResult();
-        double xpos = 100;
-        double ypos = 100;
-        double zpos = 100;
-        PhotonTrackedTarget centralTarget = new PhotonTrackedTarget();
+    public PhotonTrackedTarget getTargetClosestToCenter() {
+        PhotonPipelineResult results = m_camera.getLatestResult();
+        PhotonTrackedTarget bestTarget = null;
+        double bestTargetY = Double.MAX_VALUE;
+
         for (PhotonTrackedTarget target : results.targets) {
-            if ((target.bestCameraToTarget.getMeasureX().baseUnitMagnitude() < xpos) && 
-                (target.bestCameraToTarget.getMeasureY().baseUnitMagnitude() < ypos) && 
-                (target.bestCameraToTarget.getMeasureZ().baseUnitMagnitude() < zpos)) {
-                    centralTarget = target;
-                }
+            if (target.bestCameraToTarget.getMeasureY().baseUnitMagnitude() < bestTargetY) {
+                bestTarget = target;
+                bestTargetY = target.bestCameraToTarget.getMeasureY().baseUnitMagnitude();
+            }
         }
 
-        return centralTarget;
+        return bestTarget;
     }
-
 
     private void updateVisionData() {
         List<PhotonPipelineResult> cameraResults = m_camera.getAllUnreadResults();
