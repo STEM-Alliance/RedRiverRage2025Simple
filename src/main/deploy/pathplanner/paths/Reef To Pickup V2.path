@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.6132403679891216,
-        "y": 2.6223660249312206
+        "x": 5.275054660378447,
+        "y": 2.6377754785055356
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.19000622066426,
-        "y": 2.3336403504378724
+        "x": 4.916635099282308,
+        "y": 2.4105490837517465
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Drive Out End"
     },
     {
       "anchor": {
-        "x": 1.1613312958328377,
-        "y": 1.0346883428694844
+        "x": 1.6100275400420148,
+        "y": 0.7007227921053505
       },
       "prevControl": {
-        "x": 2.1690329292824506,
-        "y": 1.7414136070400703
+        "x": 2.4736234940247153,
+        "y": 1.187194546430242
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Pickup To Reef End"
     }
   ],
   "rotationTargets": [],
@@ -48,7 +48,7 @@
   "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 59.99999999999999
+    "rotation": 120.72691528904042
   },
   "useDefaultConstraints": true
 }

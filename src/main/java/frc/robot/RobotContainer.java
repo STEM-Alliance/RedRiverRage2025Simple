@@ -26,11 +26,12 @@ import com.pathplanner.lib.util.PathPlannerLogging;
  * subsystems, commands, and trigger mappings) should be declared here.
  */
 public class RobotContainer {
-  private final DrivetrainSubsystem m_drivetrain = new DrivetrainSubsystem();
-  private final VisionSubsystem m_photonVison = new VisionSubsystem(m_drivetrain.getPoseEstimator());
 
   private final SendableChooser<Command> m_autoChooser;
   private final Field2d m_field = new Field2d();
+
+  private final DrivetrainSubsystem m_drivetrain = new DrivetrainSubsystem(m_field);
+  private final VisionSubsystem m_photonVison = new VisionSubsystem(m_drivetrain.getPoseEstimator());
       
   private final CommandXboxController m_driverController = new CommandXboxController(kDriverControllerPort);
 
@@ -55,6 +56,17 @@ public class RobotContainer {
     // The drivetrain is responsible for the teleop drive command,
     // so this doesn't need to be changed between different drivetrains.
     m_drivetrain.setDefaultCommand(m_drivetrain.getTeleopDriveCommand(m_driverController));
+    // new RunCommand(null, null).unless(
+    //   new Trigger(
+    //     () -> {
+    //       double leftX = m_driverController.getLeftX();
+    //       double leftY = m_driverController.getLeftY();
+    //       double leftMagnitude = Math.sqrt(Math.pow(leftX, 2) + Math.pow(leftY, 2));
+
+    //       return (leftMagnitude > kControllerDeadband);
+    //     }
+    //   )
+    // );
   }
 
   private final void configurePathplannerLogging() {

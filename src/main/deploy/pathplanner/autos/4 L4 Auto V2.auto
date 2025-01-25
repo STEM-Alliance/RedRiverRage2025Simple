@@ -1,0 +1,97 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Drive Out V2"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "AlignRightOffset"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Reef To Pickup V2"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 0.75
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Pickup To Reef V2"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "AlignLeftOffset"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Reef To Pickup V2"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 0.75
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Pickup To Reef V2 Alt"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "AlignRightOffset"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Reef To Pickup V2 Alt"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 0.75
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Pickup To Reef V2 Alt"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "AlignLeftOffset"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": null,
+  "choreoAuto": false
+}

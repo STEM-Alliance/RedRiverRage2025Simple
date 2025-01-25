@@ -92,10 +92,13 @@ public class DrivetrainSubsystem extends SubsystemBase {
     "DrivetrainSubsystem: Pathplanner failed to load the robot configuration!",
     AlertType.kError
   );
+
+  private final Field2d m_field;
   
     /** Creates a new DriveSubSystem. */
-    public DrivetrainSubsystem() {
+    public DrivetrainSubsystem(Field2d field) {
       m_pigeon2.reset();
+      m_field = field;
   
       // Set deviations for the pose estimator vision measurements, rotation is positive infinity since
       // the gyro will give us more accurate results than the vision system. We should also scale this by the
@@ -149,6 +152,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
 
   public void periodic() {
     updateOdometry();
+    m_field.setRobotPose(getPose());
     
     DataLogHelpers.logDouble(m_pigeon2.getYaw().getValue().in(Units.Degrees), "Pigeon2Yaw");
     DataLogHelpers.logDouble(getPose().getX(), "RobotPoseX");

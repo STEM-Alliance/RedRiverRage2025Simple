@@ -83,8 +83,8 @@ public class SwerveModule {
       .idleMode(IdleMode.kCoast)
       .smartCurrentLimit(Constants.NeoLimit);
     driveConfig.encoder
-      .positionConversionFactor(2 * Math.PI * Constants.kWheelRadius / Constants.kDriveGearReduction)
-      .velocityConversionFactor(2 * Math.PI * Constants.kWheelRadius / Constants.kDriveGearReduction / 60);
+      .positionConversionFactor(2.0 * Math.PI * Constants.kWheelRadius / Constants.kDriveGearReduction)// * (1 - 0.0234))
+      .velocityConversionFactor(2.0 * Math.PI * Constants.kWheelRadius / Constants.kDriveGearReduction / 60.0);// * (1 - 0.0234));
         
     m_driveMotor.configure(driveConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
@@ -94,8 +94,8 @@ public class SwerveModule {
       .idleMode(IdleMode.kBrake)
       .smartCurrentLimit(Constants.NeoLimit);
       turnConfig.encoder
-      .positionConversionFactor(2 * Math.PI / Constants.kTurningGearReduction)
-      .velocityConversionFactor(2 * Math.PI / Constants.kTurningGearReduction / 60);
+      .positionConversionFactor(2.0 * Math.PI / Constants.kTurningGearReduction)
+      .velocityConversionFactor(2.0 * Math.PI / Constants.kTurningGearReduction / 60.0);
 
     m_turningMotor.configure(turnConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
@@ -204,7 +204,7 @@ public class SwerveModule {
     // {
     //   diffPos -= Constants.kEncoderRes;
     // }
-    return (diffPos * 2 * Math.PI);// / Constants.kTurningGearReduction); /// Constants.kEncoderRes;
+    return (diffPos * 2.0 * Math.PI);// / Constants.kTurningGearReduction); /// Constants.kEncoderRes;
   }
 
   public void syncSwerveEncoder(double syncedAbsPos) {

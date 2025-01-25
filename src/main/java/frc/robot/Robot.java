@@ -4,7 +4,6 @@
 
 package frc.robot;
 
-import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 
 import edu.wpi.first.wpilibj.Alert;
@@ -12,11 +11,8 @@ import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.Commands;
-import frc.robot.commands.ApriltagAlignment;
 
 /**
  * The methods in this class are called automatically corresponding to each mode, as described in
@@ -27,6 +23,8 @@ public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
 
   private final RobotContainer m_robotContainer;
+
+  private final Alert m_noAutonomousAlert = new Alert("Robot: No autonomous mode selected!", AlertType.kWarning);
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -58,20 +56,10 @@ public class Robot extends TimedRobot {
   @Override
   public void disabledInit() {}
 
-  private final Alert m_noAutonomousAlert = new Alert("No autonomous selected!", AlertType.kWarning);
-
   @Override
   public void disabledPeriodic() {
     final Command autonomous_command = m_robotContainer.getAutonomousCommand();
-
-    // TODO: Testing with alerts, this should be removed or improved.
-    if (autonomous_command instanceof PathPlannerAuto) {
-      m_noAutonomousAlert.set(false);
-    }
-
-    else {
-      m_noAutonomousAlert.set(true);
-    }
+    m_noAutonomousAlert.set(!(autonomous_command instanceof PathPlannerAuto));
   }
 
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */

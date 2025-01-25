@@ -1,0 +1,73 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Drive Out"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "AlignRightOffset"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Reef To Pickup"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 1.0
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Pickup To Reef"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "AlignLeftOffset"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Reef To Pickup"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 1.0
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Pickup To Reef Alt"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "AlignRightOffset"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": null,
+  "choreoAuto": false
+}

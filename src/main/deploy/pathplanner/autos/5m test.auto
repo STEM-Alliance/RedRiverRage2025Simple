@@ -7,13 +7,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Drive Out"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "TargetLeft"
+            "pathName": "5m"
           }
         }
       ]
