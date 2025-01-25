@@ -4,6 +4,10 @@
 
 package frc.robot.subsystems;
 
+import static frc.robot.Constants.*;
+
+import java.util.Optional;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
@@ -16,6 +20,8 @@ import edu.wpi.first.units.Units;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.utils.ControllerProcessing;
 import frc.robot.utils.DataLogHelpers;
 import frc.robot.Constants;
 import frc.robot.misc.SwerveModule;
@@ -27,7 +33,10 @@ import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.util.PathPlannerLogging;
 
+import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 
 public class DrivetrainSubsystem extends SubsystemBase {
@@ -76,10 +85,13 @@ public class DrivetrainSubsystem extends SubsystemBase {
     return m_poseEstimator;
   }
 
-  private final Field2d m_field = new Field2d();
   double m_desiredAngle = 0;
 
   private RobotConfig m_robotConfig;
+  private final Alert m_pathplannerRobotConfigAlert = new Alert(
+    "DrivetrainSubsystem: Pathplanner failed to load the robot configuration!",
+    AlertType.kError
+  );
   
     /** Creates a new DriveSubSystem. */
     public DrivetrainSubsystem() {
@@ -95,69 +107,49 @@ public class DrivetrainSubsystem extends SubsystemBase {
   
       try {
         m_robotConfig = RobotConfig.fromGUISettings();
-      } catch (Exception e) {
-        e.printStackTrace();
-  
-        // TODO find a better solution
+        m_pathplannerRobotConfigAlert.close();
+      }
+      
+      catch (Exception e) {
+        m_pathplannerRobotConfigAlert.set(true);
+        // TODO: I am unsure what effects this will have, should this just disable autonomous?
         m_robotConfig = new RobotConfig(null, null, null, null, null);
     }
 
     AutoBuilder.configure(
-              this::getPose, // Robot pose supplier
-              this::resetPose, // Method to reset odometry (will be called if your auto has a starting pose)
-              this::getChassisSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
-              (speeds, feedforwards) -> driveRobotSpeeds(speeds), // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds. Also optionally outputs individual module feedforwards
-              new PPHolonomicDriveController( // PPHolonomicController is the built in path following controller for holonomic drive trains
-                      new PIDConstants(3.5, 0.0, 0.0), // Translation PID constants
-                      new PIDConstants(2.25, 0.0, 0.0) // Rotation PID constants
-              ),
-              m_robotConfig, // The robot configuration
-              () -> {
-                // Boolean supplier that controls when the path will be mirrored for the red alliance
-                // This will flip the path being followed to the red side of the field.
-                // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
+      this::getPose, // Pose2d supplier
+      this::resetPose, // Method to reset odometry
+      this::getChassisSpeeds, // Robot-relative ChassisSpeeds supplier
+      (speeds, feedforwards) -> driveRobotSpeeds(speeds), // Robot-relative driving with optional feedfowards.
 
-                var alliance = DriverStation.getAlliance();
-                if (alliance.isPresent()) {
-                  return alliance.get() == DriverStation.Alliance.Red;
-                }
-                return false;
-              },
-              this // Reference to this subsystem to set requirements
-      );
+      new PPHolonomicDriveController(
+        new PIDConstants(3.5, 0.0, 0.0), // Translation PID constants
+        new PIDConstants(2.25, 0.0, 0.0) // Rotation PID constants
+      ),
 
-    // TODO: Fixme
-    // https://github.com/mjansen4857/pathplanner/tree/main/examples
-    // Configure AutoBuilder
-    // AutoBuilder.configureHolonomic(
-    //   this::getPose,
-    //   this::resetPose,
-    //   this::getChassisSpeeds,
-    //   this::driveRobotSpeeds,
-    //   Constants.kPathFollowerConfig,
+      m_robotConfig, // Robot hardware configuration
 
-    //   () -> {
-    //       // Boolean supplier that controls when the path will be mirrored for the red alliance
-    //       // This will flip the path being followed to the red side of the field.
-    //       // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
+      () -> {
+        // Boolean supplier that controls when the path is mirrored for the red alliance.
+        // This will flip the path being followed to the red side of the field, but the
+        // origin will remain on the blue side of the field.
+        Optional<Alliance> alliance = DriverStation.getAlliance();
 
-    //       var alliance = DriverStation.getAlliance();
-    //       if (alliance.isPresent()) {
-    //           return alliance.get() == DriverStation.Alliance.Red;
-    //       }
-    //       return false;
-    //   },
+        if (alliance.isEmpty()) {
+          // By default, the path will not be mirrored.
+          return false;
+        }
 
-    //   this);
+        return alliance.get() == DriverStation.Alliance.Red;
+      },
 
-    //       // Set up custom logging to add the current path to a field 2d widget
-    PathPlannerLogging.setLogActivePathCallback((poses) -> m_field.getObject("path").setPoses(poses));
+      this
+    );
   }
 
   public void periodic() {
     updateOdometry();
-    m_field.setRobotPose(getPose());
-
+    
     DataLogHelpers.logDouble(m_pigeon2.getYaw().getValue().in(Units.Degrees), "Pigeon2Yaw");
     DataLogHelpers.logDouble(getPose().getX(), "RobotPoseX");
     DataLogHelpers.logDouble(getPose().getY(), "RobotPoseY");
@@ -165,12 +157,31 @@ public class DrivetrainSubsystem extends SubsystemBase {
     DataLogHelpers.logDouble(m_poseEstimator.getEstimatedPosition().getX(), "RobotPoseX2");
     DataLogHelpers.logDouble(m_poseEstimator.getEstimatedPosition().getY(), "RobotPoseY2");
     DataLogHelpers.logDouble(m_poseEstimator.getEstimatedPosition().getRotation().getDegrees(), "RobotPoseDeg2");
-    DataLogHelpers.logDouble(m_field.getRobotPose().getX(), "FieldX");
-    DataLogHelpers.logDouble(m_field.getRobotPose().getY(), "FieldY");
-    DataLogHelpers.logDouble(m_field.getRobotPose().getRotation().getDegrees(), "FieldRot");
-    SmartDashboard.putData("Field", m_field);
     SmartDashboard.putNumber("RobotX", getPose().getX());
     SmartDashboard.putNumber("RobotY", getPose().getY());
+  }
+
+  public final Command getTeleopDriveCommand(CommandXboxController driverController) {
+    return new RunCommand(
+      () -> {
+        // Since the field is sideways (in the coordinate system) relative to the driver station,
+        // the x and y coordinates are flipped (x is sideways on the joystick, vertical on the field).
+        double[] processedXY = ControllerProcessing.getProcessedTranslation(
+          driverController.getLeftY(), driverController.getLeftX()
+        );
+
+        double processedOmega = ControllerProcessing.getProcessedOmega(driverController.getRightX());
+
+        controllerDrive(
+          processedXY[0] * kMaxSpeed,
+          processedXY[1] * kMaxSpeed,
+          processedOmega * kMaxAngularSpeed,
+          true,
+          0.02
+        );
+      },
+      this
+    );
   }
 
   public SwerveModule getModule(int offset) {
@@ -345,18 +356,5 @@ public class DrivetrainSubsystem extends SubsystemBase {
       //System.out.println("abspos_" + i + ": " + abspos[i]);
     }
     SmartDashboard.putNumberArray("abspos", abspos);
-  }
-
-  public void rotateChassis() {
-    driveRobotSpeeds(new ChassisSpeeds(0, 0, Constants.kAutoRotationSpeed));
-  }
-
-  public Command rotateChassisCmd(double rotationAngle) {
-    return new FunctionalCommand(
-      () -> {m_desiredAngle = rotationAngle + getPose().getRotation().getDegrees();}, 
-      () -> {rotateChassis();},
-      interrupted -> {}, // This should stop the arm at the current position
-      () -> Math.abs(getPose().getRotation().getDegrees() - m_desiredAngle) < Constants.kTargetingError
-    );
   }
 }

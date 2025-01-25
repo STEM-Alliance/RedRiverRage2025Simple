@@ -6,22 +6,18 @@ package frc.robot;
 
 import static frc.robot.Constants.*;
 
-import com.pathplanner.lib.auto.AutoBuilder;
-
-import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.ApriltagAlignment;
 import frc.robot.subsystems.DrivetrainSubsystem;
-import frc.robot.subsystems.ExampleSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
-import frc.robot.utils.ControllerProcessing;
-import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
+
 import com.pathplanner.lib.auto.*;
+import com.pathplanner.lib.util.PathPlannerLogging;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -30,83 +26,70 @@ import com.pathplanner.lib.auto.*;
  * subsystems, commands, and trigger mappings) should be declared here.
  */
 public class RobotContainer {
-  private final ExampleSubsystem m_exampleSubsystem = new ExampleSubsystem();
-
-  // The robot's subsystems and commands are defined here...
   private final DrivetrainSubsystem m_drivetrain = new DrivetrainSubsystem();
   private final VisionSubsystem m_photonVison = new VisionSubsystem(m_drivetrain.getPoseEstimator());
 
   private final SendableChooser<Command> m_autoChooser;
+  private final Field2d m_field = new Field2d();
       
-  // Replace with CommandPS4Controller or CommandJoystick if needed
-  private final CommandXboxController m_driverController =
-      new CommandXboxController(OperatorConstants.kDriverControllerPort);
+  private final CommandXboxController m_driverController = new CommandXboxController(kDriverControllerPort);
 
-  /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
-    configureNamedPaths();
-    m_autoChooser =AutoBuilder.buildAutoChooser();
+    registerPathplannerCommands();
+    m_autoChooser = AutoBuilder.buildAutoChooser();
     SmartDashboard.putData("Autonomous", m_autoChooser);
-    // Configure the trigger bindings
-    configureBindings();
+    configurePathplannerLogging();
+
+    configureControllers();
   }
 
-  /**
-   * Use this method to define your trigger->command mappings. Triggers can be created via the
-   * {@link Trigger#Trigger(java.util.function.BooleanSupplier)} constructor with an arbitrary
-   * predicate, or via the named factories in {@link
-   * edu.wpi.first.wpilibj2.command.button.CommandGenericHID}'s subclasses for {@link
-   * CommandXboxController Xbox}/{@link edu.wpi.first.wpilibj2.command.button.CommandPS4Controller
-   * PS4} controllers or {@link edu.wpi.first.wpilibj2.command.button.CommandJoystick Flight
-   * joysticks}.
-   */
-  private void configureBindings() {
-    // // Schedule `ExampleCommand` when `exampleCondition` changes to `true`
-    // new Trigger(m_exampleSubsystem::exampleCondition)
-    //     .onTrue(new ExampleCommand(m_exampleSubsystem));
-
-    // // Schedule `exampleMethodCommand` when the Xbox controller's B button is pressed,
-    // // cancelling on release.
-    // m_driverController.b().whileTrue(m_exampleSubsystem.exampleMethodCommand());
-    // m_driverController.a()
-    // m_driverController.x();
+  private final void configureControllers() {
+    //m_driverController.a();
+    //m_driverController.b();
     m_driverController.x().onTrue(m_drivetrain.resetGyro());
     m_driverController.y().onTrue(new InstantCommand(() -> m_drivetrain.homeSwerve()));
-    //m_driverController.a().whileTrue(new ApriltagAlignment(7, 0, 0, m_photonVison, m_drivetrain));
+
     m_driverController.povLeft().whileTrue(new ApriltagAlignment(-1, 0.4, -0.15, m_photonVison, m_drivetrain));
     m_driverController.povRight().whileTrue(new ApriltagAlignment(-1, 0.4, 0.15, m_photonVison, m_drivetrain));
 
-    m_drivetrain.setDefaultCommand(new InstantCommand(() -> {
-      Translation2d processedTranslation = ControllerProcessing.getProcessedTranslation(
-        m_driverController.getLeftY(), m_driverController.getLeftX());
-
-      double processedOmega = ControllerProcessing.getProcessedOmega(m_driverController.getRightX());
-      
-      m_drivetrain.controllerDrive(
-        processedTranslation.getX() * kMaxSpeed,
-        processedTranslation.getY() * kMaxSpeed,
-        processedOmega * kMaxAngularSpeed,
-        true,
-        0.02
-      );
-    },
-    m_drivetrain
-    ));
+    // The drivetrain is responsible for the teleop drive command,
+    // so this doesn't need to be changed between different drivetrains.
+    m_drivetrain.setDefaultCommand(m_drivetrain.getTeleopDriveCommand(m_driverController));
   }
 
-  public void configureNamedPaths() {
+  private final void configurePathplannerLogging() {
+    // Logging callback for the active path.
+    PathPlannerLogging.setLogActivePathCallback((poses) -> {
+      m_field.getObject("path").setPoses(poses);
+    });
+
+    // Logging callback for the current pose.
+    PathPlannerLogging.setLogCurrentPoseCallback((pose) -> {
+      m_field.setRobotPose(pose);
+    });
+
+    // Logging callback for the target pose.
+    PathPlannerLogging.setLogTargetPoseCallback((pose) -> {
+      m_field.getObject("target pose").setPose(pose);
+    });
+
+    SmartDashboard.putData("Field", m_field);
+  }
+
+  /**
+   * Registers the named commands for the Pathplanner autonomous modes. This needs to be called
+   * after the {@link AutoBuilder} is created, but before the Pathplanner auto chooser is built.
+  */
+  private final void registerPathplannerCommands() {
     NamedCommands.registerCommand("AlignLeftOffset", new ApriltagAlignment(-1, 0.4, -0.15, m_photonVison, m_drivetrain));
     NamedCommands.registerCommand("AlignRightOffset", new ApriltagAlignment(-1, 0.4, 0.15, m_photonVison, m_drivetrain));
   }
 
   /**
-   * Use this to pass the autonomous command to the main {@link Robot} class.
-   *
-   * @return the command to run in autonomous
+   * Gets the autonomous command from Pathplanner for the {@link Robot#autonomousInit()}.
+   * If no autonomous mode is chosen, this will return an empty {@link InstantCommand}.
    */
-  public Command getAutonomousCommand() {
-    // This says that it returns null if there is no autonomous
-    // selected, but that is not true: it returns an InstantCommand().
+  public final Command getAutonomousCommand() {
     return m_autoChooser.getSelected();
   }
 }

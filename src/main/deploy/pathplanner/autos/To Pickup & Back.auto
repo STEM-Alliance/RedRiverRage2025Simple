@@ -19,7 +19,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "ToCoralPickup"
+            "pathName": "Reef To Pickup"
           }
         },
         {
@@ -31,7 +31,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "FromPickupToReef"
+            "pathName": "Pickup To Reef"
           }
         },
         {

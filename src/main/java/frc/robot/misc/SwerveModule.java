@@ -113,15 +113,21 @@ public class SwerveModule {
     m_turningPIDController.enableContinuousInput(-Math.PI, Math.PI);
   }
 
+  private final SwerveModuleState m_swerveModuleState = new SwerveModuleState();
+
   /**
    * Returns the current state of the module.
    *
    * @return The current state of the module.
    */
   public SwerveModuleState getState() {
-    return new SwerveModuleState(
-        -m_driveEncoder.getVelocity(), new Rotation2d(m_turningEncoder.getPosition()));
+    m_swerveModuleState.speedMetersPerSecond = -m_driveEncoder.getVelocity();
+    m_swerveModuleState.angle = new Rotation2d(m_turningEncoder.getPosition());
+
+    return m_swerveModuleState;
   }
+
+  private final SwerveModulePosition m_swerveModulePosition = new SwerveModulePosition();
 
   /**
    * Returns the current position of the module.
@@ -129,8 +135,10 @@ public class SwerveModule {
    * @return The current position of the module.
    */
   public SwerveModulePosition getPosition() {
-    return new SwerveModulePosition(
-        -m_driveEncoder.getPosition(), new Rotation2d(m_turningEncoder.getPosition()));
+    m_swerveModulePosition.distanceMeters = -m_driveEncoder.getPosition();
+    m_swerveModulePosition.angle = new Rotation2d(m_turningEncoder.getPosition());
+
+    return m_swerveModulePosition;
   }
 
   /**

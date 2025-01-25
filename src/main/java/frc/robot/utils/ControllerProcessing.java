@@ -3,9 +3,10 @@ package frc.robot.utils;
 import static frc.robot.Constants.*;
 
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.geometry.Translation2d;
 
 public final class ControllerProcessing {
+    private static final double[] m_processedTranslation = new double[]{0.0, 0.0};
+    
     /**
      * Processing for the drivers translation inputs, applies a deadband to the normal of a 
      * {@code Translation2d} using the driver's x and y inputs, as well as applying a scaling
@@ -15,26 +16,25 @@ public final class ControllerProcessing {
      * @param y The unprocessed controller y input.
      * @return A {@code Translation2d} with the processed controller x and y inputs.
     */
-    public static final Translation2d getProcessedTranslation(double x, double y) {
+    public static final double[] getProcessedTranslation(double x, double y) {
         // Since the translation uses two axis, the processing is slightly more complex than the
         // omega processing. Instead of directly using the deadband and scaling, they are applied
         // to the normal of (x, y), and then the normal is applied to the x and y individually.
-        Translation2d unprocessedTranslation = new Translation2d(x, y);
-        double unprocessedNorm = unprocessedTranslation.getNorm();
+        double unprocessedNorm = Math.hypot(x, y);
 
         double processedNorm = MathUtil.applyDeadband(unprocessedNorm, kControllerDeadband);
         processedNorm = kControllerScaling ? scaledInput(processedNorm) : processedNorm;
 
         // Something something floating point imprecision (probably unnecessary).
-        double processedX = MathUtil.clamp(x * processedNorm, -1.0, 1.0);
-        double processedY = MathUtil.clamp(y * processedNorm, -1.0, 1.0);
+        m_processedTranslation[0] = MathUtil.clamp(x * processedNorm, -1.0, 1.0);
+        m_processedTranslation[1] = MathUtil.clamp(y * processedNorm, -1.0, 1.0);
 
         DataLogHelpers.logDouble(x, "ControllerProcessing/X");
         DataLogHelpers.logDouble(y, "ControllerProcessing/Y");
-        DataLogHelpers.logDouble(processedX, "ControllerProcessing/ProcessedX");
-        DataLogHelpers.logDouble(processedY, "ControllerProcessing/ProcessedY");
+        DataLogHelpers.logDouble(m_processedTranslation[0], "ControllerProcessing/ProcessedX");
+        DataLogHelpers.logDouble(m_processedTranslation[1], "ControllerProcessing/ProcessedY");
 
-        return new Translation2d(processedX, processedY);
+        return m_processedTranslation;
     }
 
     /**
@@ -57,7 +57,6 @@ public final class ControllerProcessing {
 
         return processedOmega;
     }
-
 
     /**
      * Scales a given input using the function 0.7x^3 + 0.3x, where x is the input.

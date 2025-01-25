@@ -5,7 +5,6 @@
 package frc.robot;
 
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.util.Units;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide
@@ -29,6 +28,7 @@ public final class Constants {
     static public double kVySlewRateLimit = 6.0;
     static public double kOmegaSlewRateLimit = 5.0;
 
+    public static final int kDriverControllerPort = 0;
     public static final double kControllerDeadband = 0.2;
     public static final boolean kControllerScaling = true;
 
@@ -78,94 +78,6 @@ public final class Constants {
     //static public double[] kZeroPosition = new double[]{0.963, 0.486, 0.070, 0.093};
     static public double[] kZeroPosition = new double[]{0.238, 0.2101, 0.704, 0.092};
     static public double kEncoderRes = 4096;
-
-    // TOOD: fix
-    // static public HolonomicPathFollowerConfig kPathFollowerConfig =
-    //     new HolonomicPathFollowerConfig(
-    //         new PIDConstants(1, 0.0, 0.0), // Translation
-    //         new PIDConstants(1, 0.0, 0.0), // Rotation
-    //         kMaxSpeed,
-    //         kSwerveTranslations[0].getNorm(),
-    //         new ReplanningConfig()
-    //     );
-    
-    static public int KRumbleTimer = 100;
-
-    /********************************************
-     * Shooter Configuration
-     *******************************************/
-    static public int kShooterArmMotorCanID = 14;
-    static public int kShooterArmEncoderChannel = 1;
-
-    static public double kShooterArmKp = 0.2;
-    static public double kShooterArmKi = 0;
-    static public double kShooterArmKd = 0;
-    static public double kShooterArmMaxSpeed = 60; // Degrees/s
-    static public double kShooterArmAcceleration = kShooterArmMaxSpeed / 0.5; // Max in 0.5s
-    static public double kShooterArmRatio = 360/230 * 1.5;
-    static public double kShooterArmChangeRate = 60; // Increase desired angle x degrees per second
-    static public double kShooterArmPIDLimit = 0.4; // Limit the PID output incase of wrong values
-
-    static public double kTargetingError = 2; // +- Error to be at setpoint
-    static public double kShooterArmLowerLimit = -48;
-    static public double kShooterArmUpperLimit = 10;
-
-    static public enum kShooterSetpoints {
-        INTAKE      (-43.25),
-        AUTOSHOOT   (-34),
-        TRAVEL      (-26),
-        REST        (-30),
-        UNHOOK      (5),
-        AMP         (10);
-        private final double armRotationTarget;
-
-        kShooterSetpoints(double armRotationTarget) {
-            this.armRotationTarget = armRotationTarget;
-        }
-
-        public double getRotationTarget() {return armRotationTarget;}
-    }
-
-    static public enum kWristSetpoints {
-        IN      (15 / 3),
-        AMP     (87 / 3),
-        OUT     (118 / 3 + 1);
-        private final double wristRotationTarget;
-
-        kWristSetpoints(double wristRotationTarget) {
-            this.wristRotationTarget = wristRotationTarget;
-        }
-
-        public double getRotationTarget() {return wristRotationTarget;}
-    }
-
-    static public double kWristLimit = 126 / 3 + 1;
-    static public double kWristLimitError = 2 / 3;
-
-    static public double kMaxFlywheelSpeed = -4000;
-
-    static public int[] kShooterMotorCanID = new int[]{11, 12};
-    static public int kNoteSensorChannel = 0;
-
-    /********************************************
-     * Intake Configuration
-     *******************************************/
-    static public int kIntakeMotorCanID = 10;
-    static public int kWristMotorCanID = 15;
-    static public double kWristOut = 236.5;
-
-    /********************************************
-     * Limelight Configuration
-     *******************************************/
-    static public String kLimelightName = "limelight";
-
-    /********************************************
-     * Climber Configuration
-     *******************************************/
-    static public double kClimberAligningSpeed = 1;
-    static public int kStageSensorChannel = 2;
-    static public int kClimbMotorCanID = 13;
-    static public int kClimbStopChannel = 0;
     
     /********************************************
      * Motor Current Limits
@@ -179,68 +91,4 @@ public final class Constants {
     static public int CIMSLimit = 28; // Max power 337 W, 28.0 A
     // https://firstwiki.github.io/wiki/denso-window-motor
     static public int WindowLimit = 15; // This seems safe
-
-    static public double kExpControl = 1.5;
-    static public boolean EnableExpoControl = false;
-
-    /********************************************
-     * Aimbot
-     *******************************************/
-    static public double kAimP = 0.000025; // 0.005
-    static public double kAimI = 0;
-    static public double kAimD = 0;
-    static public double kAimSpeedLimit = 0.15;
-    static public double kAimbotStop = 1; // 8
-
-    /********************************************
-     * TrapAim
-     *******************************************/
-    static public double kTrapAimPs = 0.04;
-    static public double kTrapAimIs = 0.04;
-    static public double kTrapAimDs = 0;
-
-    static public double kTrapAimPr = 0.04;
-    static public double kTrapAimIr = 0.04;
-    static public double kTrapAimDr = 0;
-
-    static public double kTrapAimSpeedLimit = 0.5;
-    static public double kTrapAimbotStop = 1;
-
-    /********************************************
-     * Autonomous Control
-     *******************************************/
-    /*
-     * Per the spec the Neo motors have 42 pulses/rotation
-     * The Neo encoder reports in rotations
-     * The neo rotates ~8.5 times per one wheel rotation
-     * The wheels are 6 inches
-     *
-     * The velocity is reported in RPMs, it appears the max is around 5800 RPM or
-     * so.
-     *
-     * circumference = 2 * pi * r
-     *
-     * 1 rotation of the main drive wheel is 2 * pi * 3 inches = 18.85 inches or
-     * 0.479 meters
-     * Or 1 motor rotation is 0.479 meters/9 = 0.053 meters
-     * At max speed the robot can go 0.053 meters * 5800 RPM / 60 = 5.12 meters/sec
-     *
-     * So if we are given meters/second for the wheels, we need to convert that into
-     */
-    static public double kRamseteB = 2;
-    static public double kRamsetsZeta = 0.7;
-    static public double kMaxSpeedMetersPerSecond = 2;
-    static public double kMaxAccelerationMetersPerSecondSquared = 0.3;
-    static public double TrackWidthInMeters = Units.inchesToMeters(26.5);
-    static public double MetersPerRotation = 0.0508;
-    static public boolean Simulate = false;
-    static public double AutoArmPosition = 38;
-    static public double ExtendArmPosition = 1;
-    static public double MaxAutoSpeed = 0.6;
-    static public double MaxLevelSpeed = 0.4;
-    static public double kAutoRotationSpeed = Math.PI;
-
-  public static class OperatorConstants {
-    public static final int kDriverControllerPort = 0;
-  }
 }
