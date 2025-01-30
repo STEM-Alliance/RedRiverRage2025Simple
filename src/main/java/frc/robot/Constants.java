@@ -43,8 +43,9 @@ public final class Constants {
     static public double kDriveKp = 0.0625;
     static public double kDriveKi = 0;
     static public double kDriveKd = 0;
-    static public double kDriveKs = 0.00925;
-    static public double kDriveKv = 0.2;
+    static public double kDriveKs = 0.069484 / 12.0;
+    static public double kDriveKv = 2.305 / 12.0;
+    static public double kDriveKa = 0.27208 / 12.0;
 
     // PID and feedforward gains for the swerve motors
     static public double kSwerveKp = 0.375; // 0.0.5
@@ -54,7 +55,7 @@ public final class Constants {
     static public double kSwerveKv = 0.005;
 
     // Swerve Hardware
-    static public double kWheelRadius = 0.0508;
+    static public double kWheelRadius = 0.04826;//0.0508 * (1.0 - 0.0823);
     static public double kDriveGearReduction = 6.12;
     static public double kTurningGearReduction = 12.8;
     

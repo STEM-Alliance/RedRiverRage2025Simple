@@ -13,6 +13,7 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.AnalogEncoder;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants;
 import frc.robot.utils.DataLogHelpers;
 
@@ -53,7 +54,7 @@ public class SwerveModule {
 
   // Gains are for example purposes only - must be determined for your own robot!
   private SimpleMotorFeedforward m_driveFeedforward = new SimpleMotorFeedforward(
-    Constants.kDriveKs, Constants.kDriveKv);
+    Constants.kDriveKs, Constants.kDriveKv, Constants.kDriveKa);
   
   private SimpleMotorFeedforward m_turnFeedforward = new SimpleMotorFeedforward(
     Constants.kSwerveKs, Constants.kSwerveKv);
@@ -127,6 +128,14 @@ public class SwerveModule {
     return m_swerveModuleState;
   }
 
+  public SparkMax getDriveMotor() {
+    return m_driveMotor;
+  }
+
+  public SparkMax getTurningMotor() {
+    return m_turningMotor;
+  }
+
   private final SwerveModulePosition m_swerveModulePosition = new SwerveModulePosition();
 
   /**
@@ -180,6 +189,7 @@ public class SwerveModule {
     DataLogHelpers.logDouble(m_turningEncoder.getPosition(), "Swerve_rot_enc_" + m_swerveIndex);
     DataLogHelpers.logDouble(m_driveEncoder.getPosition(), "Swerve_drive_pos_" + m_swerveIndex);
     DataLogHelpers.logDouble(m_driveEncoder.getVelocity(), "Swerve_drive_vel_" + m_swerveIndex);
+    SmartDashboard.putNumber("Swerve_drive_enc" + m_swerveIndex, m_driveEncoder.getPosition());
   }
 
   public void setGains(double kp, double ki, double kd, double ks, double kv) {

@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
 import com.pathplanner.lib.auto.*;
 import com.pathplanner.lib.util.PathPlannerLogging;
@@ -50,8 +51,8 @@ public class RobotContainer {
     m_driverController.x().onTrue(m_drivetrain.resetGyro());
     m_driverController.y().onTrue(new InstantCommand(() -> m_drivetrain.homeSwerve()));
 
-    m_driverController.povLeft().whileTrue(new ApriltagAlignment(-1, 0.4, -0.15, m_photonVison, m_drivetrain));
-    m_driverController.povRight().whileTrue(new ApriltagAlignment(-1, 0.4, 0.15, m_photonVison, m_drivetrain));
+    m_driverController.povLeft().whileTrue(new ApriltagAlignment(-1, 0.35, -0.15, m_photonVison, m_drivetrain));
+    m_driverController.povRight().whileTrue(new ApriltagAlignment(-1, 0.35, 0.15, m_photonVison, m_drivetrain));
 
     // The drivetrain is responsible for the teleop drive command,
     // so this doesn't need to be changed between different drivetrains.
@@ -67,6 +68,24 @@ public class RobotContainer {
     //     }
     //   )
     // );
+
+    m_driverController
+        .a()
+        .and(m_driverController.rightBumper())
+        .whileTrue(m_drivetrain.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+    m_driverController
+        .b()
+        .and(m_driverController.rightBumper())
+        .whileTrue(m_drivetrain.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+    m_driverController
+        .x()
+        .and(m_driverController.rightBumper())
+        .whileTrue(m_drivetrain.sysIdDynamic(SysIdRoutine.Direction.kForward));
+    m_driverController
+        .y()
+        .and(m_driverController.rightBumper())
+        .whileTrue(m_drivetrain.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+
   }
 
   private final void configurePathplannerLogging() {
