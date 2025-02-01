@@ -13,6 +13,8 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -49,7 +51,7 @@ public class VisionSubsystem extends SubsystemBase {
 
     public void periodic() {
         try {
-            //updateVisionData();
+            updateVisionData();
         }
 
         catch (Exception e) {
@@ -108,8 +110,27 @@ public class VisionSubsystem extends SubsystemBase {
 
             if (estimatorResults.isPresent()) {
                 Pose2d estimatedPose = estimatorResults.get().estimatedPose.toPose2d();
-                //System.out.println("Poses x, y:" + estimatedPose.getX() + " " + estimatedPose.getY());
-                m_drivetrainPoseEstimator.addVisionMeasurement(estimatedPose, cameraResult.getTimestampSeconds());
+
+                double averageDistance = 0.0;
+                double averageAmbiguity = 0.0;
+
+                for (PhotonTrackedTarget target : estimatorResults.get().targetsUsed) {
+                    var cameraToTarget = target.getBestCameraToTarget();
+                    var distanceToTarget = Math.sqrt(
+                        Math.pow(cameraToTarget.getX(), 2) + 
+                        Math.pow(cameraToTarget.getY(), 2)
+                    );
+
+                    averageDistance += distanceToTarget;
+                    averageAmbiguity += target.poseAmbiguity;
+                }
+
+                averageDistance /= estimatorResults.get().targetsUsed.size();
+                averageAmbiguity /= estimatorResults.get().targetsUsed.size();
+
+                if ((averageDistance <= 1.75) && (averageAmbiguity <= 0.325)) {
+                    m_drivetrainPoseEstimator.addVisionMeasurement(estimatedPose, cameraResult.getTimestampSeconds());
+                }
             }
         }
     }

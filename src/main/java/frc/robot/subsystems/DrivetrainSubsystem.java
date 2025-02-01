@@ -148,7 +148,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
   
       // Actual deviations are 0.5, over time odometry becomes less accurate?
       // Deviaton for rotation should be Double.POSITIVE_INFINITY
-      m_poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(1.0, 1.0, 10.0));
+      //m_poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(1.0, 1.0, 1.0));
   
       try {
         m_robotConfig = RobotConfig.fromGUISettings();
