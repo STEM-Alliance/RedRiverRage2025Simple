@@ -34,7 +34,9 @@ public final class Constants {
 
     // Max speeds
     static public double kMaxSpeed = 5.1; // 5.1 meters per second
+    static public double kMaxAutonomousSpeed = 3.0;
     static public double kMaxAngularSpeed = 3.5 * Math.PI; // 2 rotations per second 
+    static public double kMaxAutonomousAngularSpeed = kMaxAngularSpeed;
     static public double kMaxAngularAcceleration = Math.pow(2.0 * Math.PI, 2);
     static public double GeneralDeadband = 0.2;
 
@@ -43,9 +45,9 @@ public final class Constants {
     static public double kDriveKp = 0.0625;
     static public double kDriveKi = 0;
     static public double kDriveKd = 0;
-    static public double kDriveKs = 0.069484 / 12.0;
-    static public double kDriveKv = 2.305 / 12.0;
-    static public double kDriveKa = 0.27208 / 12.0;
+    static public double kDriveKs = 0.27074 / 12.0;
+    static public double kDriveKv = 2.7069 / 12.0;
+    static public double kDriveKa = 0.5075 / 12.0;
 
     // PID and feedforward gains for the swerve motors
     static public double kSwerveKp = 0.375; // 0.0.5
@@ -53,6 +55,7 @@ public final class Constants {
     static public double kSwerveKd = 0; // 0
     static public double kSwerveKs = 0.02;
     static public double kSwerveKv = 0.005;
+    static public double kSwerveKa = 0.0;
 
     // Swerve Hardware
     static public double kWheelRadius = 0.04826;//0.0508 * (1.0 - 0.0823);

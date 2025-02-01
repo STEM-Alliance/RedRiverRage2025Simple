@@ -22,7 +22,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class VisionSubsystem extends SubsystemBase {
-    private final PhotonCamera m_camera = new PhotonCamera("imx708_wide");
+    private final PhotonCamera m_camera = new PhotonCamera("Arducam");
     private final Transform3d m_cameraTransform = new Transform3d(
         new Translation3d(),
         new Rotation3d(0.0, 0.0, 0.0)
@@ -49,7 +49,7 @@ public class VisionSubsystem extends SubsystemBase {
 
     public void periodic() {
         try {
-            updateVisionData();
+            //updateVisionData();
         }
 
         catch (Exception e) {

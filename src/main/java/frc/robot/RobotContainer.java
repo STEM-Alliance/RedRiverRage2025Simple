@@ -7,6 +7,7 @@ package frc.robot;
 import static frc.robot.Constants.*;
 
 import frc.robot.commands.ApriltagAlignment;
+import frc.robot.commands.ApriltagOverride;
 import frc.robot.subsystems.DrivetrainSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -51,8 +52,8 @@ public class RobotContainer {
     m_driverController.x().onTrue(m_drivetrain.resetGyro());
     m_driverController.y().onTrue(new InstantCommand(() -> m_drivetrain.homeSwerve()));
 
-    m_driverController.povLeft().whileTrue(new ApriltagAlignment(-1, 0.35, -0.15, m_photonVison, m_drivetrain));
-    m_driverController.povRight().whileTrue(new ApriltagAlignment(-1, 0.35, 0.15, m_photonVison, m_drivetrain));
+    m_driverController.povLeft().whileTrue(new ApriltagAlignment(-1, 0.8, -0.15, m_photonVison, m_drivetrain, true));
+    m_driverController.povRight().whileTrue(new ApriltagAlignment(-1, 0.8, 0.15, m_photonVison, m_drivetrain, true));
 
     // The drivetrain is responsible for the teleop drive command,
     // so this doesn't need to be changed between different drivetrains.
@@ -112,8 +113,11 @@ public class RobotContainer {
    * after the {@link AutoBuilder} is created, but before the Pathplanner auto chooser is built.
   */
   private final void registerPathplannerCommands() {
-    NamedCommands.registerCommand("AlignLeftOffset", new ApriltagAlignment(-1, 0.4, -0.15, m_photonVison, m_drivetrain));
-    NamedCommands.registerCommand("AlignRightOffset", new ApriltagAlignment(-1, 0.4, 0.15, m_photonVison, m_drivetrain));
+    NamedCommands.registerCommand("AlignLeftInterrupt", new ApriltagOverride(-1, 0.8, -0.15, m_photonVison, m_drivetrain));
+    NamedCommands.registerCommand("AlignLeftOffset", new ApriltagAlignment(-1, 0.8, -0.15, m_photonVison, m_drivetrain, true));
+
+    NamedCommands.registerCommand("AlignRightInterrupt", new ApriltagOverride(-1, 0.8, 0.15, m_photonVison, m_drivetrain));
+    NamedCommands.registerCommand("AlignRightOffset", new ApriltagAlignment(-1, 0.8, 0.15, m_photonVison, m_drivetrain, true));
   }
 
   /**

@@ -34,17 +34,11 @@ import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
-import edu.wpi.first.units.measure.MutDistance;
-import edu.wpi.first.units.measure.MutLinearVelocity;
-import edu.wpi.first.units.measure.MutVoltage;
-
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
-import com.pathplanner.lib.util.PathPlannerLogging;
-
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -100,7 +94,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
 
   double m_desiredAngle = 0;
 
-  private RobotConfig m_robotConfig;
+  public RobotConfig m_robotConfig;
   private final Alert m_pathplannerRobotConfigAlert = new Alert(
     "DrivetrainSubsystem: Pathplanner failed to load the robot configuration!",
     AlertType.kError
@@ -123,30 +117,20 @@ public class DrivetrainSubsystem extends SubsystemBase {
           new SysIdRoutine.Mechanism(
               // Tell SysId how to plumb the driving voltage to the motors.
               voltage -> {
-                driveLeftVoltage(voltage);
-                driveRightVoltage(voltage);
+                driveVoltage(voltage);
               },
               // Tell SysId how to record a frame of data for each motor on the mechanism being
               // characterized.
               log -> {
                 // Record a frame for the left motors.  Since these share an encoder, we consider
                 // the entire group to be one motor.
-                log.motor("drive-left")
+                log.motor("drive")
                     .voltage(
                         m_appliedVoltage.mut_replace(
-                            leftMotorGet() * RobotController.getBatteryVoltage(), Volts))
-                    .linearPosition(m_distance.mut_replace(leftMotorEncoderDistance(), Meters))
+                            getMotorOutput() * RobotController.getBatteryVoltage(), Volts))
+                    .linearPosition(m_distance.mut_replace(getMotorDistance(), Meters))
                     .linearVelocity(
-                        m_velocity.mut_replace(leftMotorEncoderRate(), MetersPerSecond));
-                // Record a frame for the right motors.  Since these share an encoder, we consider
-                // the entire group to be one motor.
-                log.motor("drive-right")
-                    .voltage(
-                        m_appliedVoltage.mut_replace(
-                            rightMotorGet() * RobotController.getBatteryVoltage(), Volts))
-                    .linearPosition(m_distance.mut_replace(rightMotorEncoderDistance(), Meters))
-                    .linearVelocity(
-                        m_velocity.mut_replace(rightMotorEncoderRate(), MetersPerSecond));
+                        m_velocity.mut_replace(getMotorVelocity(), MetersPerSecond));
               },
               // Tell SysId to make generated commands require this subsystem, suffix test state in
               // WPILog with this subsystem's name ("drive")
@@ -293,8 +277,8 @@ public class DrivetrainSubsystem extends SubsystemBase {
     robotSpeeds.omegaRadiansPerSecond = -robotSpeeds.omegaRadiansPerSecond;
 
     if (DriverStation.isAutonomous()) {
-      double maxDriveVelocity = m_robotConfig.moduleConfig.maxDriveVelocityMPS;
-      double maxRotationalVelocity = m_robotConfig.moduleConfig.maxDriveVelocityRadPerSec;
+      double maxDriveVelocity = kMaxAutonomousSpeed;//m_robotConfig.moduleConfig.maxDriveVelocityMPS;
+      double maxRotationalVelocity = kMaxAutonomousAngularSpeed;//m_robotConfig.moduleConfig.maxDriveVelocityRadPerSec;
 
       robotSpeeds.vxMetersPerSecond = MathUtil.clamp(
         robotSpeeds.vxMetersPerSecond, -maxDriveVelocity, maxDriveVelocity
@@ -420,64 +404,40 @@ public class DrivetrainSubsystem extends SubsystemBase {
     SmartDashboard.putNumberArray("abspos", abspos);
   }
 
-  public void driveLeftVoltage(Voltage volts)
-  {
-    m_frontLeft.getDriveMotor().setVoltage(volts);
-    m_backLeft.getDriveMotor().setVoltage(volts);
+  private final void driveVoltage(Voltage outputVolts) {
+    for (SwerveModule module : m_modules) {
+      module.getDriveMotor().setVoltage(outputVolts);
+    }
   }
 
-  public void driveRightVoltage(Voltage volts)
-  {
-    m_frontRight.getDriveMotor().setVoltage(volts);
-    m_backRight.getDriveMotor().setVoltage(volts);
+  private final double getMotorOutput() {
+    double summedAppliedOutput = 0.0;
+
+    for (SwerveModule module : m_modules) {
+      summedAppliedOutput += module.getDriveMotor().getAppliedOutput();
+    }
+
+    return summedAppliedOutput / m_modules.length;
   }
 
-  public double leftMotorGet()
-  {
-    double frontLeftVelocity = m_frontLeft.getDriveMotor().getAppliedOutput();
-    double backLeftVelocity = m_backLeft.getDriveMotor().getAppliedOutput();
+  private final double getMotorDistance() {
+    double summedDistance = 0.0;
 
-    return (frontLeftVelocity + backLeftVelocity) / 2.0;
+    for (SwerveModule module : m_modules) {
+      summedDistance += module.getDriveMotor().getEncoder().getPosition();
+    }
+
+    return summedDistance / m_modules.length;
   }
 
-  public double rightMotorGet()
-  {
-    double frontRightVelocity = m_frontRight.getDriveMotor().getAppliedOutput();
-    double backRightVelocity = m_backRight.getDriveMotor().getAppliedOutput();
+  private final double getMotorVelocity() {
+    double summedVelocity = 0.0;
 
-    return (frontRightVelocity + backRightVelocity) / 2.0;
-  }
+    for (SwerveModule module : m_modules) {
+      summedVelocity += module.getDriveMotor().getEncoder().getVelocity();
+    }
 
-  public double leftMotorEncoderDistance()
-  {
-    double frontLeftDistance = m_frontLeft.getDriveMotor().getEncoder().getPosition();
-    double backLeftDistance = m_backLeft.getDriveMotor().getEncoder().getPosition();
-
-    return (frontLeftDistance + backLeftDistance) / 2.0;
-  }
-
-  public double rightMotorEncoderDistance()
-  {
-    double frontRightDistance = m_frontRight.getDriveMotor().getEncoder().getPosition();
-    double backRightDistance = m_backRight.getDriveMotor().getEncoder().getPosition();
-
-    return (frontRightDistance + backRightDistance) / 2.0;
-  }
-
-  public double leftMotorEncoderRate()
-  {
-    double frontLeftVelocity = m_frontLeft.getDriveMotor().getEncoder().getVelocity();
-    double backLeftVelocity = m_backLeft.getDriveMotor().getEncoder().getVelocity();
-
-    return (frontLeftVelocity + backLeftVelocity) / 2.0;
-  }
-
-  public double rightMotorEncoderRate()
-  {
-    double frontRightVelocity = m_frontRight.getDriveMotor().getEncoder().getVelocity();
-    double backRightVelocity = m_backRight.getDriveMotor().getEncoder().getVelocity();
-
-    return (frontRightVelocity + backRightVelocity) / 2.0;
+    return summedVelocity / m_modules.length;
   }
 
   /**

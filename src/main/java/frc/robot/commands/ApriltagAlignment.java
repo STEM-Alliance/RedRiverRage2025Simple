@@ -17,19 +17,21 @@ public class ApriltagAlignment extends Command {
 
     private int m_counter = 0;
     private int m_apriltag;
+    private boolean m_output;
 
     public ApriltagAlignment(
         int apriltag,
         double xOffset,
         double yOffset,
         VisionSubsystem photonVision,
-        DrivetrainSubsystem drivetrain
+        DrivetrainSubsystem drivetrain,
+        boolean output
     ) {
+        m_output = output;
         m_apriltag = apriltag;
         m_photonVision = photonVision;
 
         m_drivetrain = drivetrain;
-        addRequirements(drivetrain);
 
         m_xPID.setSetpoint(xOffset);
         m_yPID.setSetpoint(yOffset);
@@ -41,7 +43,14 @@ public class ApriltagAlignment extends Command {
         // Integral is only used within +- 12.5 degrees of the target, with -0.1 to 0.1 max influence.
         m_rotPID.setIZone(12.5);
         m_rotPID.setIntegratorRange(-0.075, 0.075);
+
+        if (output) addRequirements(drivetrain);
+
         System.out.println("+ApriltagAlignment command");
+    }
+
+    public final void disableOutput() {
+        
     }
 
     // Called when the command is initially scheduled.
@@ -50,7 +59,7 @@ public class ApriltagAlignment extends Command {
         m_apriltag = -1;
     }
 
-    private final ChassisSpeeds m_desiredChassisSpeeds = new ChassisSpeeds();
+    public final ChassisSpeeds m_desiredChassisSpeeds = new ChassisSpeeds();
 
     // Called every time the scheduler runs while the command is scheduled.
     @Override
@@ -68,7 +77,8 @@ public class ApriltagAlignment extends Command {
             m_desiredChassisSpeeds.vxMetersPerSecond = -m_xPID.calculate(x_offset);
             m_desiredChassisSpeeds.vyMetersPerSecond = -m_yPID.calculate(y_offset);
             m_desiredChassisSpeeds.omegaRadiansPerSecond = m_rotPID.calculate(rot);
-            m_drivetrain.driveRobotSpeeds(m_desiredChassisSpeeds);
+
+            if (m_output) m_drivetrain.driveRobotSpeeds(m_desiredChassisSpeeds);
             
             m_counter++;
             System.out.println(m_counter + "=> " + x_offset + " " + y_offset + " " + rot);
