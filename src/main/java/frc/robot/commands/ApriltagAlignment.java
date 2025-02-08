@@ -8,6 +8,7 @@ import frc.robot.subsystems.VisionSubsystem;
 
 /** An example command that uses an example subsystem. */
 public class ApriltagAlignment extends Command {
+    // TODO: This doesnt account for the camera offset
     private final VisionSubsystem m_photonVision;
     private final DrivetrainSubsystem m_drivetrain;
 

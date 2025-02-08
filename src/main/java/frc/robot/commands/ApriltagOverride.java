@@ -57,15 +57,17 @@ public class ApriltagOverride extends Command {
     // Returns true when the command should end.
     @Override
     public boolean isFinished() {
-        ChassisSpeeds a = m_drivetrain.getChassisSpeeds();
-        ChassisSpeeds b = m_alignmentCommand.m_desiredChassisSpeeds;
+        ChassisSpeeds current = m_drivetrain.getChassisSpeeds();
+        ChassisSpeeds alignment = m_alignmentCommand.m_desiredChassisSpeeds;
 
-        if ((m_counter >= 10) && Math.abs(a.omegaRadiansPerSecond) <= Math.abs(b.omegaRadiansPerSecond)) {
-            // While the direction being travelled is ignored, it can be assumed that it will be in a similar direction.
-            var aMagnitude = Math.sqrt(Math.pow(a.vxMetersPerSecond, 2) + Math.pow(a.vyMetersPerSecond, 2));
-            var bMagnitude = Math.sqrt(Math.pow(b.vxMetersPerSecond, 2) + Math.pow(b.vyMetersPerSecond, 2));
+        // This counter will count up even if a new frame is not recieved. It will at least
+        // ensure that there is a delay between the first detection and the interrupt.
+        if ((m_counter >= 4)) {
+            // The squared speed is used to avoid unnecessary square roots, the real speed doesn't matter.
+            double currentSpeedSquared = Math.pow(current.vxMetersPerSecond, 2) + Math.pow(current.vyMetersPerSecond, 2);
+            double alignmentSpeedSquared = Math.pow(alignment.vxMetersPerSecond, 2) + Math.pow(alignment.vyMetersPerSecond, 2);
             
-            return (aMagnitude <= bMagnitude) && !(bMagnitude > Math.sqrt(2 * Math.pow(kMaxAutonomousSpeed, 2)));
+            return ((currentSpeedSquared <= alignmentSpeedSquared)) && (alignmentSpeedSquared <= Math.pow(kMaxAutonomousSpeed, 2));
         }
 
         return false;

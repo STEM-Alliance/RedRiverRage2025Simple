@@ -70,11 +70,11 @@ public final class Constants {
         new Translation2d(-0.2286, -0.22225)
     };
 
-    // Module Index, Drive Motor Channel, Swerve Motor Channel, Analog Encoder Channel
-    static public int[] kSwerveFLCanID = new int[]{0, 1, 2, 0};
-    static public int[] kSwerveFRCanID = new int[]{1, 3, 4, 1};
-    static public int[] kSwerveBLCanID = new int[]{2, 5, 6, 2};
-    static public int[] kSwerveBRCanID = new int[]{3, 7, 8, 3};
+    // Module Index, Drive Motor Channel, Swerve Motor Channel, CANCoder Channel
+    static public int[] kSwerveFLCanID = new int[]{0, 1, 2, 33};
+    static public int[] kSwerveFRCanID = new int[]{1, 3, 4, 31};
+    static public int[] kSwerveBLCanID = new int[]{2, 5, 6, 30};
+    static public int[] kSwerveBRCanID = new int[]{3, 7, 8, 32};
 
     static public int kPigeon2CanID = 40;
 

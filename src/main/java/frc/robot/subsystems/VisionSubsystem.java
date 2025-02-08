@@ -26,8 +26,14 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 public class VisionSubsystem extends SubsystemBase {
     private final PhotonCamera m_camera = new PhotonCamera("Arducam");
     private final Transform3d m_cameraTransform = new Transform3d(
-        new Translation3d(),
-        new Rotation3d(0.0, 0.0, 0.0)
+        new Translation3d(0.0, 0.0, 0.229),
+        new Rotation3d()
+    );
+
+    private final PhotonCamera m_camera2 = new PhotonCamera("imx708_wide");
+    private final Transform3d m_camera2Transform = new Transform3d(
+        new Translation3d(0.0, 0.114, 0.26),
+        new Rotation3d()
     );
 
     private final AprilTagFieldLayout m_apriltagLayout = AprilTagFieldLayout.loadField(
@@ -38,15 +44,22 @@ public class VisionSubsystem extends SubsystemBase {
         m_apriltagLayout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, m_cameraTransform
     );
 
+    private final PhotonPoseEstimator m_poseEstimator2 = new PhotonPoseEstimator(
+        m_apriltagLayout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, m_camera2Transform
+    );
+
     private final SwerveDrivePoseEstimator m_drivetrainPoseEstimator;
 
     public VisionSubsystem(SwerveDrivePoseEstimator drivetrainPoseEstimator) {
         m_drivetrainPoseEstimator = drivetrainPoseEstimator;
         m_poseEstimator.setMultiTagFallbackStrategy(PoseStrategy.AVERAGE_BEST_TARGETS);
+        m_poseEstimator2.setMultiTagFallbackStrategy(PoseStrategy.AVERAGE_BEST_TARGETS);
 
         // Debug snapshots.
         m_camera.takeInputSnapshot();
         m_camera.takeOutputSnapshot();
+        m_camera2.takeInputSnapshot();
+        m_camera2.takeOutputSnapshot();
     }
 
     public void periodic() {
@@ -103,6 +116,10 @@ public class VisionSubsystem extends SubsystemBase {
 
     private void updateVisionData() {
         List<PhotonPipelineResult> cameraResults = m_camera.getAllUnreadResults();
+        
+        for (PhotonPipelineResult cameraResult : m_camera2.getAllUnreadResults()) {
+            cameraResults.add(cameraResult);
+        }
 
         for (PhotonPipelineResult cameraResult : cameraResults) {
             // TODO: The estimations can be scaled by the distances and velocity of the robot.
@@ -111,26 +128,29 @@ public class VisionSubsystem extends SubsystemBase {
             if (estimatorResults.isPresent()) {
                 Pose2d estimatedPose = estimatorResults.get().estimatedPose.toPose2d();
 
-                double averageDistance = 0.0;
-                double averageAmbiguity = 0.0;
+                m_drivetrainPoseEstimator.addVisionMeasurement(estimatedPose, cameraResult.getTimestampSeconds());
+                // Pose2d estimatedPose = estimatorResults.get().estimatedPose.toPose2d();
 
-                for (PhotonTrackedTarget target : estimatorResults.get().targetsUsed) {
-                    var cameraToTarget = target.getBestCameraToTarget();
-                    var distanceToTarget = Math.sqrt(
-                        Math.pow(cameraToTarget.getX(), 2) + 
-                        Math.pow(cameraToTarget.getY(), 2)
-                    );
+                // double averageDistance = 0.0;
+                // double averageAmbiguity = 0.0;
 
-                    averageDistance += distanceToTarget;
-                    averageAmbiguity += target.poseAmbiguity;
-                }
+                // for (PhotonTrackedTarget target : estimatorResults.get().targetsUsed) {
+                //     var cameraToTarget = target.getBestCameraToTarget();
+                //     var distanceToTarget = Math.sqrt(
+                //         Math.pow(cameraToTarget.getX(), 2) + 
+                //         Math.pow(cameraToTarget.getY(), 2)
+                //     );
 
-                averageDistance /= estimatorResults.get().targetsUsed.size();
-                averageAmbiguity /= estimatorResults.get().targetsUsed.size();
+                //     averageDistance += distanceToTarget;
+                //     averageAmbiguity += target.poseAmbiguity;
+                // }
 
-                if ((averageDistance <= 1.75) && (averageAmbiguity <= 0.325)) {
-                    m_drivetrainPoseEstimator.addVisionMeasurement(estimatedPose, cameraResult.getTimestampSeconds());
-                }
+                // averageDistance /= estimatorResults.get().targetsUsed.size();
+                // averageAmbiguity /= estimatorResults.get().targetsUsed.size();
+
+                // if ((averageDistance <= 1.75) && (averageAmbiguity <= 0.325)) {
+                //     m_drivetrainPoseEstimator.addVisionMeasurement(estimatedPose, cameraResult.getTimestampSeconds());
+                // }
             }
         }
     }

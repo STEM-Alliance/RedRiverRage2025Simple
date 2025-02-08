@@ -39,6 +39,10 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+import com.pathplanner.lib.util.DriveFeedforwards;
+import com.pathplanner.lib.util.swerve.SwerveSetpoint;
+import com.pathplanner.lib.util.swerve.SwerveSetpointGenerator;
+
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -102,6 +106,13 @@ public class DrivetrainSubsystem extends SubsystemBase {
 
   private final Field2d m_field;
 
+  private SwerveSetpoint previousSetpoint;
+
+  private final SwerveSetpointGenerator setpointGenerator = new SwerveSetpointGenerator(
+    m_robotConfig, // The robot configuration. This is the same config used for generating trajectories and running path following commands.
+    kMaxAngularSpeed // The max rotation velocity of a swerve module in radians per second. This should probably be stored in your Constants file
+  );
+
   // Mutable holder for unit-safe voltage values, persisted to avoid reallocation.
   private final MutVoltage m_appliedVoltage = Volts.mutable(0);
   // Mutable holder for unit-safe linear distance values, persisted to avoid reallocation.
@@ -148,7 +159,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
   
       // Actual deviations are 0.5, over time odometry becomes less accurate?
       // Deviaton for rotation should be Double.POSITIVE_INFINITY
-      //m_poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(1.0, 1.0, 1.0));
+      m_poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(3.5, 3.5, 6.5));
   
       try {
         m_robotConfig = RobotConfig.fromGUISettings();
@@ -190,6 +201,11 @@ public class DrivetrainSubsystem extends SubsystemBase {
 
       this
     );
+
+        // Initialize the previous setpoint to the robot's current speeds & module states
+        ChassisSpeeds currentSpeeds = getChassisSpeeds(); // Method to get current robot-relative chassis speeds
+        SwerveModuleState[] currentStates = getModuleStates(); // Method to get the current swerve module states
+        previousSetpoint = new SwerveSetpoint(currentSpeeds, currentStates, DriveFeedforwards.zeros(m_robotConfig.numModules));
   }
 
   public void periodic() {
@@ -211,7 +227,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
     return new RunCommand(
       () -> {
         // Since the field is sideways (in the coordinate system) relative to the driver station,
-        // the x and y coordinates are flipped (x is sideways on the joystick, vertical on the field).
+        // the x and y coordinates are flipped (x is horizontal on the joystick, vertical on the field).
         double[] processedXY = ControllerProcessing.getProcessedTranslation(
           driverController.getLeftY(), driverController.getLeftX()
         );
@@ -268,6 +284,8 @@ public class DrivetrainSubsystem extends SubsystemBase {
     driveRobotSpeeds(relativeSpeeds);
   }
 
+  public ChassisSpeeds pathplannerSpeeds = new ChassisSpeeds();
+
   public void driveRobotSpeeds(ChassisSpeeds robotSpeeds) {
     // TODO: Make the pathplanner GUI speed limit actually limit speed
     // Use the robot config module config max speeds
@@ -277,6 +295,8 @@ public class DrivetrainSubsystem extends SubsystemBase {
     robotSpeeds.omegaRadiansPerSecond = -robotSpeeds.omegaRadiansPerSecond;
 
     if (DriverStation.isAutonomous()) {
+      pathplannerSpeeds = robotSpeeds;
+
       double maxDriveVelocity = kMaxAutonomousSpeed;//m_robotConfig.moduleConfig.maxDriveVelocityMPS;
       double maxRotationalVelocity = kMaxAutonomousAngularSpeed;//m_robotConfig.moduleConfig.maxDriveVelocityRadPerSec;
 
@@ -291,19 +311,34 @@ public class DrivetrainSubsystem extends SubsystemBase {
       robotSpeeds.omegaRadiansPerSecond = MathUtil.clamp(
         robotSpeeds.omegaRadiansPerSecond, -maxRotationalVelocity, maxRotationalVelocity
       );
+
+      // TODO: Should these be applied to the teleop drive as well?
+       // Note: it is important to not discretize speeds before or after
+        // using the setpoint generator, as it will discretize them for you
+        previousSetpoint = setpointGenerator.generateSetpoint(
+            previousSetpoint, // The previous setpoint
+            robotSpeeds, // The desired target speeds
+            0.02 // The loop time of the robot code, in seconds
+        );
+
+        for (int i = 0; i < 4; i++) {
+          m_modules[i].setDesiredState(previousSetpoint.moduleStates()[i]); // Method that will drive the robot given target module states
+        }
     }
 
-    var targetSpeeds = ChassisSpeeds.discretize(robotSpeeds, 0.02);
-    var swerveModuleStates = m_kinematics.toSwerveModuleStates(targetSpeeds);
+    else {
+      var targetSpeeds = ChassisSpeeds.discretize(robotSpeeds, 0.02);
+      var swerveModuleStates = m_kinematics.toSwerveModuleStates(targetSpeeds);
 
-    DataLogHelpers.logDouble(robotSpeeds.vxMetersPerSecond, "Vx");
-    DataLogHelpers.logDouble(robotSpeeds.vyMetersPerSecond, "Vy");
-    DataLogHelpers.logDouble(robotSpeeds.omegaRadiansPerSecond, "Omega");
+      DataLogHelpers.logDouble(robotSpeeds.vxMetersPerSecond, "Vx");
+      DataLogHelpers.logDouble(robotSpeeds.vyMetersPerSecond, "Vy");
+      DataLogHelpers.logDouble(robotSpeeds.omegaRadiansPerSecond, "Omega");
 
-    SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, Constants.kMaxSpeed);
+      SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, Constants.kMaxSpeed);
 
-    for (int i = 0; i < 4; i++) {
-      m_modules[i].setDesiredState(swerveModuleStates[i]);
+      for (int i = 0; i < 4; i++) {
+        m_modules[i].setDesiredState(swerveModuleStates[i]);
+      }
     }
   }
 

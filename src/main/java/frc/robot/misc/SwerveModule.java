@@ -23,6 +23,7 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
+import com.ctre.phoenix6.hardware.CANcoder;
 import com.revrobotics.RelativeEncoder;
 
 public class SwerveModule {
@@ -37,7 +38,8 @@ public class SwerveModule {
   private RelativeEncoder m_turningEncoder;
 
   //private final AnalogInput m_absolutePos;
-  private final AnalogEncoder m_absolutePos;
+  //private final AnalogEncoder m_absolutePos;
+  private final CANcoder m_cancoder;
 
   // Gains are for example purposes only - must be determined for your own robot!
   private final PIDController m_drivePIDController = new PIDController(
@@ -73,7 +75,7 @@ public class SwerveModule {
       int swerveIndex,
       int driveMotorChannel,
       int turningMotorChannel,
-      int analogInputChannel) {
+      int cancoderChannel) {
     m_swerveIndex = swerveIndex;
     m_driveMotor = new SparkMax(driveMotorChannel, MotorType.kBrushless);
     m_turningMotor = new SparkMax(turningMotorChannel, MotorType.kBrushless);
@@ -100,7 +102,8 @@ public class SwerveModule {
 
     m_turningMotor.configure(turnConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
-    m_absolutePos = new AnalogEncoder(analogInputChannel);
+    //m_absolutePos = new AnalogEncoder(analogInputChannel);
+    m_cancoder = new CANcoder(cancoderChannel);
 
     m_driveEncoder = m_driveMotor.getEncoder();
     m_turningEncoder = m_turningMotor.getEncoder();
@@ -123,7 +126,7 @@ public class SwerveModule {
    */
   public SwerveModuleState getState() {
     m_swerveModuleState.speedMetersPerSecond = -m_driveEncoder.getVelocity();
-    m_swerveModuleState.angle = new Rotation2d(m_turningEncoder.getPosition());
+    m_swerveModuleState.angle = new Rotation2d(getAbsPos());
 
     return m_swerveModuleState;
   }
@@ -145,7 +148,7 @@ public class SwerveModule {
    */
   public SwerveModulePosition getPosition() {
     m_swerveModulePosition.distanceMeters = -m_driveEncoder.getPosition();
-    m_swerveModulePosition.angle = new Rotation2d(m_turningEncoder.getPosition());
+    m_swerveModulePosition.angle = new Rotation2d(getAbsPos());
 
     return m_swerveModulePosition;
   }
@@ -156,7 +159,7 @@ public class SwerveModule {
    * @param desiredState Desired state with speed and angle.
    */
   public void setDesiredState(SwerveModuleState desiredState) {
-    Rotation2d encoderRotation = new Rotation2d(m_turningEncoder.getPosition());
+    Rotation2d encoderRotation = new Rotation2d(getAbsPos());//m_turningEncoder.getPosition());
 
     // Optimizing the state prevents rotations more than 90 degrees.
     desiredState.optimize(encoderRotation);
@@ -179,14 +182,14 @@ public class SwerveModule {
 
     // Calculate the turning motor output from the turning PID controller.
     final double turnPID =
-      m_turningPIDController.calculate(m_turningEncoder.getPosition(), desiredState.angle.getRadians());
+      m_turningPIDController.calculate(getAbsPos(), desiredState.angle.getRadians());
 
     final double turnFF = m_turnFeedforward.calculate(m_turningPIDController.getSetpoint().velocity);
 
     m_driveMotor.set(drivePID + driveFF);
     m_turningMotor.set(turnPID + turnFF);
 
-    DataLogHelpers.logDouble(m_turningEncoder.getPosition(), "Swerve_rot_enc_" + m_swerveIndex);
+    DataLogHelpers.logDouble(getAbsPos(), "Swerve_rot_enc_" + m_swerveIndex);
     DataLogHelpers.logDouble(m_driveEncoder.getPosition(), "Swerve_drive_pos_" + m_swerveIndex);
     DataLogHelpers.logDouble(m_driveEncoder.getVelocity(), "Swerve_drive_vel_" + m_swerveIndex);
     SmartDashboard.putNumber("Swerve_drive_enc" + m_swerveIndex, m_driveEncoder.getPosition());
@@ -200,30 +203,35 @@ public class SwerveModule {
     m_turnFeedforward = new SimpleMotorFeedforward(ks, kv);
   }
 
-  private double getSwerveEncoderSyncedPos(double syncedAbsPos) {
-    /* Calculate the error and wrap it around to the nearest half
-    If the current rotation was 50, and the target was 4096, this
-    would set the encoders rotation to ~+0.1 rotations instead of ~-12.5 */
+  // private double getSwerveEncoderSyncedPos(double syncedAbsPos) {
+  //   /* Calculate the error and wrap it around to the nearest half
+  //   If the current rotation was 50, and the target was 4096, this
+  //   would set the encoders rotation to ~+0.1 rotations instead of ~-12.5 */
 
-    double diffPos = getAbsPos() - syncedAbsPos;
-    if (diffPos < 0)
-    {
-      diffPos += 1;
-    }
-    // if (diffPos > Constants.kEncoderRes / 2)
-    // {
-    //   diffPos -= Constants.kEncoderRes;
-    // }
-    return (diffPos * 2.0 * Math.PI);// / Constants.kTurningGearReduction); /// Constants.kEncoderRes;
-  }
+  //   double diffPos = getAbsPos() - syncedAbsPos;
+  //   if (diffPos < 0)
+  //   {
+  //     diffPos += 1;
+  //   }
+  //   // if (diffPos > Constants.kEncoderRes / 2)
+  //   // {
+  //   //   diffPos -= Constants.kEncoderRes;
+  //   // }
+  //   return (diffPos * 2.0 * Math.PI);// / Constants.kTurningGearReduction); /// Constants.kEncoderRes;
+  // }
 
   public void syncSwerveEncoder(double syncedAbsPos) {
-    m_turningEncoder.setPosition(getSwerveEncoderSyncedPos(syncedAbsPos));
+    //m_turningEncoder.setPosition(getSwerveEncoderSyncedPos(syncedAbsPos));
+    m_turningEncoder.setPosition(getAbsPos() / Constants.kTurningGearReduction);
   }
 
-  public double getAbsPos() {
-    return m_absolutePos.get();
+  public final double getAbsPos() {
+    return (m_cancoder.getAbsolutePosition().getValueAsDouble() + 0.5) * 2.0 * Math.PI;
   }
+
+  // public double getAbsPos() {
+  //   return m_absolutePos.get();
+  // }
 
   public void setBrake(boolean enabled) {
     if (enabled) {
