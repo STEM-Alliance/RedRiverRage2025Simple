@@ -29,6 +29,8 @@ public final class Constants {
     static public double kOmegaSlewRateLimit = 5.0;
 
     public static final int kDriverControllerPort = 0;
+    public static final int kOperatorControllerPort = 1;
+    public static final int kOperatorButtonPanelPort = 2;
     public static final double kControllerDeadband = 0.2;
     public static final boolean kControllerScaling = true;
 
@@ -82,6 +84,39 @@ public final class Constants {
     //static public double[] kZeroPosition = new double[]{0.963, 0.486, 0.070, 0.093};
     static public double[] kZeroPosition = new double[]{0.238, 0.2101, 0.704, 0.092};
     static public double kEncoderRes = 4096;
+
+    static public enum kElevatorSetpoints {
+        L4      (50.0),
+        L3      (40.0),
+        L2      (25.0),
+        L1      (15.0),
+        INTAKE  (26.5);
+        
+        private final double m_elevatorSetpoint;
+
+        kElevatorSetpoints(double elevatorSetpoint) {
+            m_elevatorSetpoint = elevatorSetpoint;
+        }
+
+        public double getAsDouble() {return m_elevatorSetpoint;}
+    }
+
+    static public enum kShooterSetpoints {
+        L4    (50.0),
+        L3    (40.0),
+        L2    (40.0),
+        L1    (40.0),
+        INTAKE  (26.5),
+        SHOOT  (26.5);
+
+        private final double m_shooterSetpoints;
+
+        kShooterSetpoints(double shooterSetpoint) {
+            m_shooterSetpoints = shooterSetpoint;
+        }
+
+        public double getAsDouble() {return m_shooterSetpoints;}
+    }
     
     /********************************************
      * Motor Current Limits

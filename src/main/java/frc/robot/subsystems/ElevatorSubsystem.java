@@ -1,5 +1,8 @@
 package frc.robot.subsystems;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
@@ -8,8 +11,11 @@ import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.PrintCommand;
+import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-
+import frc.robot.Constants.kElevatorSetpoints;
+import frc.robot.Constants.kShooterSetpoints;
 import frc.robot.utils.DataLogHelpers;
 
 public class ElevatorSubsystem extends SubsystemBase {
@@ -40,6 +46,40 @@ public class ElevatorSubsystem extends SubsystemBase {
 
         m_shooterPID.setIZone(0.0);
         m_shooterPID.setIntegratorRange(0.0, 0.0);
+    }
+
+    private ArrayList<Integer> m_buttonsPressed = new ArrayList<>();
+
+    public final Command setState(
+        int buttonPanelButton,
+        kElevatorSetpoints elevatorSetpoint,
+        kShooterSetpoints shooterSetpoint
+    ) {
+        return new InstantCommand(() -> {
+            m_buttonsPressed.add(buttonPanelButton);
+            System.out.println("Set state to: " + elevatorSetpoint.toString() + " " + shooterSetpoint.toString());
+        });
+    }
+
+    public final Command setStateIdle(int buttonPanelButton) {
+        return new InstantCommand(() -> {
+            // There has to be a better, command-based way to do this, right?
+            if (buttonPanelButton == m_buttonsPressed.get(m_buttonsPressed.size() - 1)) {
+                m_buttonsPressed.remove(m_buttonsPressed.size() - 1);
+
+                if (m_buttonsPressed.size() == 0) {
+                    System.out.println("Set state to: idle");
+                }
+
+                else {
+                    System.out.println("Set state to: " + m_buttonsPressed.get(m_buttonsPressed.size() - 1));
+                }
+            }
+
+            else if (m_buttonsPressed.contains(buttonPanelButton)) {
+                m_buttonsPressed.remove(m_buttonsPressed.indexOf(buttonPanelButton));
+            }
+        });
     }
 
     public void periodic() {
