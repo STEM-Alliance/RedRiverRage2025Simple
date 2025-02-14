@@ -19,13 +19,13 @@ public class ApriltagOverride extends Command {
         int apriltag,
         double xOffset,
         double yOffset,
-        VisionSubsystem photonVision,
+        VisionSubsystem[] cameras,
         DrivetrainSubsystem drivetrain
     ) {
-        m_photonVision = photonVision;
+        m_photonVision = cameras[0];
         m_drivetrain = drivetrain;
 
-        m_alignmentCommand = new ApriltagAlignment(apriltag, xOffset, yOffset, photonVision, drivetrain, false);
+        m_alignmentCommand = new ApriltagAlignment(apriltag, xOffset, yOffset, cameras, drivetrain, false);
     }
 
     // Called when the command is initially scheduled.

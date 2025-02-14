@@ -24,13 +24,13 @@ public class ApriltagAlignment extends Command {
         int apriltag,
         double xOffset,
         double yOffset,
-        VisionSubsystem photonVision,
+        VisionSubsystem[] cameras,
         DrivetrainSubsystem drivetrain,
         boolean output
     ) {
         m_output = output;
         m_apriltag = apriltag;
-        m_photonVision = photonVision;
+        m_photonVision = cameras[0];
 
         m_drivetrain = drivetrain;
 

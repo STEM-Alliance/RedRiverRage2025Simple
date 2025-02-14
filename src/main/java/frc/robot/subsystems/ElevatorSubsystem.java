@@ -1,19 +1,20 @@
 package frc.robot.subsystems;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.SparkBase.PersistMode;
+import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import com.revrobotics.spark.config.SparkMaxConfig;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.PrintCommand;
-import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+
+import frc.robot.Constants;
 import frc.robot.Constants.kElevatorSetpoints;
 import frc.robot.Constants.kShooterSetpoints;
 import frc.robot.utils.DataLogHelpers;
@@ -32,7 +33,7 @@ public class ElevatorSubsystem extends SubsystemBase {
         0.0, 0.0, 0.0, new TrapezoidProfile.Constraints(0.0, 0.0)
     );
 
-    private final TofDistanceSubsystem m_tofSensor = new TofDistanceSubsystem(0);
+    private final IntakeSubsystem m_intake = new IntakeSubsystem(0, 0);
 
     public ElevatorSubsystem(int elevatorMotorID, int shooterMotorID) {
         m_elevatorMotor = new SparkMax(elevatorMotorID, MotorType.kBrushless);
@@ -46,40 +47,26 @@ public class ElevatorSubsystem extends SubsystemBase {
 
         m_shooterPID.setIZone(0.0);
         m_shooterPID.setIntegratorRange(0.0, 0.0);
-    }
 
-    private ArrayList<Integer> m_buttonsPressed = new ArrayList<>();
+        SparkMaxConfig elevatorConfig = new SparkMaxConfig();
+        SparkMaxConfig shooterConfig = new SparkMaxConfig();
 
-    public final Command setState(
-        int buttonPanelButton,
-        kElevatorSetpoints elevatorSetpoint,
-        kShooterSetpoints shooterSetpoint
-    ) {
-        return new InstantCommand(() -> {
-            m_buttonsPressed.add(buttonPanelButton);
-            System.out.println("Set state to: " + elevatorSetpoint.toString() + " " + shooterSetpoint.toString());
-        });
-    }
+        elevatorConfig
+            .idleMode(IdleMode.kBrake)
+            .smartCurrentLimit(Constants.NeoLimit);
+        elevatorConfig.encoder
+            .positionConversionFactor(1.0)
+            .velocityConversionFactor(1.0);
+        
+        shooterConfig
+            .idleMode(IdleMode.kBrake)
+            .smartCurrentLimit(Constants.WindowLimit);
+        shooterConfig.encoder
+            .positionConversionFactor(1.0)
+            .velocityConversionFactor(1.0);
 
-    public final Command setStateIdle(int buttonPanelButton) {
-        return new InstantCommand(() -> {
-            // There has to be a better, command-based way to do this, right?
-            if (buttonPanelButton == m_buttonsPressed.get(m_buttonsPressed.size() - 1)) {
-                m_buttonsPressed.remove(m_buttonsPressed.size() - 1);
-
-                if (m_buttonsPressed.size() == 0) {
-                    System.out.println("Set state to: idle");
-                }
-
-                else {
-                    System.out.println("Set state to: " + m_buttonsPressed.get(m_buttonsPressed.size() - 1));
-                }
-            }
-
-            else if (m_buttonsPressed.contains(buttonPanelButton)) {
-                m_buttonsPressed.remove(m_buttonsPressed.indexOf(buttonPanelButton));
-            }
-        });
+        m_elevatorMotor.configure(elevatorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        m_shooterMotor.configure(shooterConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     }
 
     public void periodic() {
@@ -129,10 +116,43 @@ public class ElevatorSubsystem extends SubsystemBase {
         m_shooterMotor.set(shooterOutput);
     }
 
-    private final boolean shooterIsLoaded() {
-        int tofDistance = m_tofSensor.get_distance();
-        int tofStatus = m_tofSensor.get_status();
+    public final Command setState(
+        kElevatorSetpoints elevatorSetpoint,
+        kShooterSetpoints shooterSetpoint
+    ) {
+        return new InstantCommand(() -> {
+            if (elevatorSetpoint != null) setElevatorSetpoint(elevatorSetpoint.getAsDouble());
+            if (shooterSetpoint != null) setShooterSetpoint(shooterSetpoint.getAsDouble());
+        });
+    }
 
-        return (tofStatus == 0) && (tofDistance < 75);
+    public final Command setStateIdle() {
+        return new InstantCommand(() -> {
+            setState(kElevatorSetpoints.IDLE, kShooterSetpoints.IDLE);
+        });
+    }
+
+    public final Command startIntaking() {
+        return new InstantCommand(() -> {
+            setState(null, kShooterSetpoints.INTAKE);
+        }).alongWith(m_intake.startIntaking());
+    }
+
+    public final Command stopIntaking() {
+        return new InstantCommand(() -> {
+            setState(null, kShooterSetpoints.IDLE);
+        }).alongWith(m_intake.stopIntaking());
+    }
+
+    public final Command startShooting() {
+        return new InstantCommand(() -> {
+            setState(null, kShooterSetpoints.SHOOT);
+        }).alongWith(m_intake.startShooting());
+    }
+
+    public final Command stopShooting() {
+        return new InstantCommand(() -> {
+            setState(null, kShooterSetpoints.IDLE);
+        }).alongWith(m_intake.stopShooting());
     }
 }

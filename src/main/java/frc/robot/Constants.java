@@ -90,6 +90,7 @@ public final class Constants {
         L3      (40.0),
         L2      (25.0),
         L1      (15.0),
+        IDLE    (20.0),
         INTAKE  (26.5);
         
         private final double m_elevatorSetpoint;
@@ -102,12 +103,13 @@ public final class Constants {
     }
 
     static public enum kShooterSetpoints {
-        L4    (50.0),
-        L3    (40.0),
-        L2    (40.0),
-        L1    (40.0),
+        L4      (50.0),
+        L3      (40.0),
+        L2      (40.0),
+        L1      (40.0),
         INTAKE  (26.5),
-        SHOOT  (26.5);
+        IDLE    (25.0),
+        SHOOT   (26.5);
 
         private final double m_shooterSetpoints;
 
