@@ -170,9 +170,9 @@ public class SwerveModule {
 
     // This is only used in teleop (disabled in autonomous)
     // since it gives Pathplanner more precise translation control.
-    if (DriverStation.isTeleop()) {
-      desiredState.speedMetersPerSecond *= desiredState.angle.minus(encoderRotation).getCos();
-    }
+    //if (DriverStation.isTeleop()) {
+    desiredState.speedMetersPerSecond *= desiredState.angle.minus(encoderRotation).getCos();
+    //}
 
     // Calculate the drive output from the drive PID controller.
     final double drivePID =

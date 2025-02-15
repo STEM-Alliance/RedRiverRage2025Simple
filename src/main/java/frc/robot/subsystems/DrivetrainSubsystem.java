@@ -39,9 +39,6 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
-import com.pathplanner.lib.util.DriveFeedforwards;
-import com.pathplanner.lib.util.swerve.SwerveSetpoint;
-import com.pathplanner.lib.util.swerve.SwerveSetpointGenerator;
 
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
@@ -105,13 +102,6 @@ public class DrivetrainSubsystem extends SubsystemBase {
   );
 
   private final Field2d m_field;
-
-  private SwerveSetpoint previousSetpoint;
-
-  private final SwerveSetpointGenerator setpointGenerator = new SwerveSetpointGenerator(
-    m_robotConfig, // The robot configuration. This is the same config used for generating trajectories and running path following commands.
-    kMaxAngularSpeed // The max rotation velocity of a swerve module in radians per second. This should probably be stored in your Constants file
-  );
 
   // Mutable holder for unit-safe voltage values, persisted to avoid reallocation.
   private final MutVoltage m_appliedVoltage = Volts.mutable(0);
@@ -179,8 +169,8 @@ public class DrivetrainSubsystem extends SubsystemBase {
       (speeds, feedforwards) -> driveRobotSpeeds(speeds), // Robot-relative driving with optional feedfowards.
 
       new PPHolonomicDriveController(
-        new PIDConstants(3.0, 0.0, 0.0), // Translation PID constants
-        new PIDConstants(2.25, 0.0, 0.0) // Rotation PID constants
+        new PIDConstants(1.5, 0.0, 0.0), // Translation PID constants
+        new PIDConstants(1.0, 0.0, 0.0) // Rotation PID constants
       ),
 
       m_robotConfig, // Robot hardware configuration
@@ -201,11 +191,6 @@ public class DrivetrainSubsystem extends SubsystemBase {
 
       this
     );
-
-        // Initialize the previous setpoint to the robot's current speeds & module states
-        ChassisSpeeds currentSpeeds = getChassisSpeeds(); // Method to get current robot-relative chassis speeds
-        SwerveModuleState[] currentStates = getModuleStates(); // Method to get the current swerve module states
-        previousSetpoint = new SwerveSetpoint(currentSpeeds, currentStates, DriveFeedforwards.zeros(m_robotConfig.numModules));
   }
 
   public void periodic() {
@@ -312,33 +297,22 @@ public class DrivetrainSubsystem extends SubsystemBase {
         robotSpeeds.omegaRadiansPerSecond, -maxRotationalVelocity, maxRotationalVelocity
       );
 
-      // TODO: Should these be applied to the teleop drive as well?
-       // Note: it is important to not discretize speeds before or after
-        // using the setpoint generator, as it will discretize them for you
-        previousSetpoint = setpointGenerator.generateSetpoint(
-            previousSetpoint, // The previous setpoint
-            robotSpeeds, // The desired target speeds
-            0.02 // The loop time of the robot code, in seconds
-        );
-
-        for (int i = 0; i < 4; i++) {
-          m_modules[i].setDesiredState(previousSetpoint.moduleStates()[i]); // Method that will drive the robot given target module states
-        }
+      SmartDashboard.putNumber("PathplannerVX", robotSpeeds.vxMetersPerSecond);
+      SmartDashboard.putNumber("PathplannerVY", robotSpeeds.vyMetersPerSecond);
+      SmartDashboard.putNumber("PathplannerOmega", robotSpeeds.omegaRadiansPerSecond);
     }
 
-    else {
-      var targetSpeeds = ChassisSpeeds.discretize(robotSpeeds, 0.02);
-      var swerveModuleStates = m_kinematics.toSwerveModuleStates(targetSpeeds);
+    var targetSpeeds = ChassisSpeeds.discretize(robotSpeeds, 0.02);
+    var swerveModuleStates = m_kinematics.toSwerveModuleStates(targetSpeeds);
 
-      DataLogHelpers.logDouble(robotSpeeds.vxMetersPerSecond, "Vx");
-      DataLogHelpers.logDouble(robotSpeeds.vyMetersPerSecond, "Vy");
-      DataLogHelpers.logDouble(robotSpeeds.omegaRadiansPerSecond, "Omega");
+    DataLogHelpers.logDouble(robotSpeeds.vxMetersPerSecond, "Vx");
+    DataLogHelpers.logDouble(robotSpeeds.vyMetersPerSecond, "Vy");
+    DataLogHelpers.logDouble(robotSpeeds.omegaRadiansPerSecond, "Omega");
 
-      SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, Constants.kMaxSpeed);
+    SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, Constants.kMaxSpeed);
 
-      for (int i = 0; i < 4; i++) {
-        m_modules[i].setDesiredState(swerveModuleStates[i]);
-      }
+    for (int i = 0; i < 4; i++) {
+      m_modules[i].setDesiredState(swerveModuleStates[i]);
     }
   }
 

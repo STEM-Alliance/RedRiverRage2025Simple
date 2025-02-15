@@ -5,3 +5,6 @@ Setpoints for elevator and shooter
 Autonomous commands for elevator and shooter
 Test climb and elevator
 Absolute encoder
+
+When the climb feature is toggled the software shall raise the elevator to position X and rotate the coral intake to 90 degrees or parallel to the horiztonal plane
+Once the climb feature is enabled, the software shall stay in climb mode until one of the position automation buttons is pressed (i.e. L1, L2, L3, L4, or home)

@@ -1,7 +1,12 @@
 package frc.robot.commands;
 
+import static frc.robot.Constants.kMaxAlignmentAngularSpeed;
+import static frc.robot.Constants.kMaxAlignmentSpeed;
+
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.DrivetrainSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
@@ -12,8 +17,10 @@ public class ApriltagAlignment extends Command {
     private final VisionSubsystem m_photonVision;
     private final DrivetrainSubsystem m_drivetrain;
 
-    private final PIDController m_xPID = new PIDController(1.75, 0.0, 0.0);
-    private final PIDController m_yPID = new PIDController(1.75, 0.0, 0.0);
+    private final PIDController m_xPID = new PIDController(3.5, 0.0, 0.0);
+
+    private final PIDController m_yPID = new PIDController(3.5, 0.0, 0.0);
+
     private final PIDController m_rotPID = new PIDController(2.0, 0.2, 0.0);
 
     private int m_counter = 0;
@@ -75,11 +82,15 @@ public class ApriltagAlignment extends Command {
             var x_offset = target.bestCameraToTarget.getMeasureX().baseUnitMagnitude();
             var y_offset = target.bestCameraToTarget.getMeasureY().baseUnitMagnitude();
             var rot = target.bestCameraToTarget.getRotation().getAngle();
-            m_desiredChassisSpeeds.vxMetersPerSecond = -m_xPID.calculate(x_offset);
-            m_desiredChassisSpeeds.vyMetersPerSecond = -m_yPID.calculate(y_offset);
-            m_desiredChassisSpeeds.omegaRadiansPerSecond = m_rotPID.calculate(rot);
+            m_desiredChassisSpeeds.vxMetersPerSecond = MathUtil.clamp(-m_xPID.calculate(x_offset), -kMaxAlignmentSpeed, kMaxAlignmentSpeed);
+            m_desiredChassisSpeeds.vyMetersPerSecond = MathUtil.clamp(-m_yPID.calculate(y_offset), -kMaxAlignmentSpeed, kMaxAlignmentSpeed);
+            m_desiredChassisSpeeds.omegaRadiansPerSecond = MathUtil.clamp(m_rotPID.calculate(rot), -kMaxAlignmentAngularSpeed, kMaxAlignmentAngularSpeed);
 
             if (m_output) m_drivetrain.driveRobotSpeeds(m_desiredChassisSpeeds);
+
+            SmartDashboard.putNumber("XError", m_xPID.getError());
+            SmartDashboard.putNumber("YError", m_yPID.getError());
+            SmartDashboard.putNumber("RotError", m_rotPID.getError());
             
             m_counter++;
             System.out.println(m_counter + "=> " + x_offset + " " + y_offset + " " + rot);

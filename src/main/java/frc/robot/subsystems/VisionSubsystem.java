@@ -99,7 +99,17 @@ public class VisionSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
+        Optional<EstimatedRobotPose> estimatedPose = getEstimatedGlobalPose();
 
+        if (estimatedPose.isPresent()) {
+            // Do the two cameras override each other or are they always done in sequence?
+            m_swervePoseEstimator.setVisionMeasurementStdDevs(getEstimationStdDevs());
+
+            m_swervePoseEstimator.addVisionMeasurement(
+                estimatedPose.get().estimatedPose.toPose2d(),
+                estimatedPose.get().timestampSeconds
+            );
+        }
     }
 
     /**
@@ -194,6 +204,53 @@ public class VisionSubsystem extends SubsystemBase {
         }
 
         return bestTarget;
+    }
+
+    public PhotonTrackedTarget getClosestCameraTarget() {
+        PhotonPipelineResult results = camera.getLatestResult();
+        PhotonTrackedTarget bestTarget = null;
+
+        double bestSquaredDistance = Double.MAX_VALUE;
+
+        for (PhotonTrackedTarget target : results.targets) {
+            double targetX = target.bestCameraToTarget.getMeasureX().baseUnitMagnitude();
+            double targetY = target.bestCameraToTarget.getMeasureY().baseUnitMagnitude();
+            double targetZ = target.bestCameraToTarget.getMeasureZ().baseUnitMagnitude();
+
+            double squaredDistance =
+                Math.pow(targetX, 2) +
+                Math.pow(targetY, 2) +
+                Math.pow(targetZ, 2);
+            
+            if (squaredDistance < bestSquaredDistance) {
+                bestTarget = target;
+                bestSquaredDistance = squaredDistance;
+            }
+        }
+
+        return bestTarget;
+    }
+
+    public double getClosestCameraTargetDistance() {
+        PhotonPipelineResult results = camera.getLatestResult();
+        double bestSquaredDistance = Double.MAX_VALUE;
+
+        for (PhotonTrackedTarget target : results.targets) {
+            double targetX = target.bestCameraToTarget.getMeasureX().baseUnitMagnitude();
+            double targetY = target.bestCameraToTarget.getMeasureY().baseUnitMagnitude();
+            double targetZ = target.bestCameraToTarget.getMeasureZ().baseUnitMagnitude();
+
+            double squaredDistance =
+                Math.pow(targetX, 2) +
+                Math.pow(targetY, 2) +
+                Math.pow(targetZ, 2);
+            
+            if (squaredDistance < bestSquaredDistance) {
+                bestSquaredDistance = squaredDistance;
+            }
+        }
+
+        return bestSquaredDistance;
     }
 
     /**

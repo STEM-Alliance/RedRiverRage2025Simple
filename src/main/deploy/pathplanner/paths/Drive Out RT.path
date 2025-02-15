@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 7.27,
-        "y": 3.4
+        "x": 7.822,
+        "y": 3.276703974921901
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.9533031762730255,
-        "y": 3.2700167361865176
+        "x": 6.819680762763454,
+        "y": 3.0352862645334673
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 5.275054660378447,
-        "y": 2.6377754785055356
+        "x": 5.263,
+        "y": 2.7
       },
       "prevControl": {
-        "x": 5.51549066194174,
-        "y": 2.7425677943100433
+        "x": 5.654914494942139,
+        "y": 2.8032125609439538
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Drive Out End"
+      "linkedName": null
     }
   ],
   "rotationTargets": [],
@@ -41,8 +41,8 @@
     "unlimited": false
   },
   "goalEndState": {
-    "velocity": 0,
-    "rotation": 120.72691528904042
+    "velocity": 0.0,
+    "rotation": 119.99999999999999
   },
   "reversed": false,
   "folder": null,

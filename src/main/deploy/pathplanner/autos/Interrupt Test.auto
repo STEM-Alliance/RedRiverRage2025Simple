@@ -11,13 +11,26 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Interrupt Test"
+                  "pathName": "Drive Out RT"
                 }
               },
               {
-                "type": "named",
+                "type": "parallel",
                 "data": {
-                  "name": "AlignLeftInterrupt"
+                  "commands": [
+                    {
+                      "type": "wait",
+                      "data": {
+                        "waitTime": 1.09375
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "AlignLeftInterrupt"
+                      }
+                    }
+                  ]
                 }
               }
             ]

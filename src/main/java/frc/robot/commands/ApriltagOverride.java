@@ -12,6 +12,7 @@ public class ApriltagOverride extends Command {
     private final VisionSubsystem m_photonVision;
     private final DrivetrainSubsystem m_drivetrain;
 
+    private final int m_apriltag;
     private int m_counter = 0;
     private ApriltagAlignment m_alignmentCommand;
 
@@ -22,6 +23,7 @@ public class ApriltagOverride extends Command {
         VisionSubsystem[] cameras,
         DrivetrainSubsystem drivetrain
     ) {
+        m_apriltag = apriltag;
         m_photonVision = cameras[0];
         m_drivetrain = drivetrain;
 
@@ -37,9 +39,9 @@ public class ApriltagOverride extends Command {
     // Called every time the scheduler runs while the command is scheduled.
     @Override
     public void execute() {
-        var target = m_photonVision.getTargetClosestToCenter();
+        var target = m_photonVision.getClosestCameraTarget();
 
-        if (target != null) {
+        if ((target != null) && ((m_apriltag == -1) || (target.fiducialId == m_apriltag))) {
             m_counter++;
         }
 
@@ -67,7 +69,7 @@ public class ApriltagOverride extends Command {
             double currentSpeedSquared = Math.pow(current.vxMetersPerSecond, 2) + Math.pow(current.vyMetersPerSecond, 2);
             double alignmentSpeedSquared = Math.pow(alignment.vxMetersPerSecond, 2) + Math.pow(alignment.vyMetersPerSecond, 2);
             
-            return ((currentSpeedSquared <= alignmentSpeedSquared)) && (alignmentSpeedSquared <= Math.pow(kMaxAutonomousSpeed, 2));
+            return m_photonVision.getClosestCameraTargetDistance() <= 1.0;
         }
 
         return false;

@@ -7,31 +7,31 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Drive Out"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "AlignRightOffset"
+            "pathName": "Drive Out RT"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Reef To Pickup"
+            "pathName": "RT Reef To Pickup"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Pickup To Reef"
+            "pathName": "Pickup to RB Reef"
           }
         },
         {
-          "type": "named",
+          "type": "path",
           "data": {
-            "name": "AlignLeftOffset"
+            "pathName": "RB Reef to Pickup"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Pickup to RB Reef"
           }
         }
       ]

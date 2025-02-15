@@ -36,11 +36,14 @@ public final class Constants {
 
     // Max speeds
     static public double kMaxSpeed = 5.1; // 5.1 meters per second
-    static public double kMaxAutonomousSpeed = 3.0;
+    static public double kMaxAutonomousSpeed = 2.0;
     static public double kMaxAngularSpeed = 3.5 * Math.PI; // 2 rotations per second 
     static public double kMaxAutonomousAngularSpeed = kMaxAngularSpeed;
     static public double kMaxAngularAcceleration = Math.pow(2.0 * Math.PI, 2);
     static public double GeneralDeadband = 0.2;
+
+    public static final double kMaxAlignmentSpeed = 1.0;
+    public static final double kMaxAlignmentAngularSpeed = Math.PI / 2.0;
 
     // PID and Feedforward gains for the drive motors
     // NOTE: We are running the drive motors in open loop mode, using only the feedfoward.
