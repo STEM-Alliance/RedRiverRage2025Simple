@@ -5,9 +5,28 @@
     "data": {
       "commands": [
         {
-          "type": "path",
+          "type": "race",
           "data": {
-            "pathName": "Drive Out RT"
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Drive Out RT"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "AlignLeftInterrupt"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "AlignLeftOffset"
           }
         },
         {
@@ -17,9 +36,47 @@
           }
         },
         {
-          "type": "path",
+          "type": "race",
           "data": {
-            "pathName": "Pickup to RB Reef"
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "Stop"
+                }
+              },
+              {
+                "type": "wait",
+                "data": {
+                  "waitTime": 0.5
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "race",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Pickup to RB Reef"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "AlignLeftInterrupt"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "AlignLeftOffset"
           }
         },
         {
@@ -29,9 +86,47 @@
           }
         },
         {
-          "type": "path",
+          "type": "race",
           "data": {
-            "pathName": "Pickup to RB Reef"
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "Stop"
+                }
+              },
+              {
+                "type": "wait",
+                "data": {
+                  "waitTime": 0.5
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "race",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Pickup to RB Reef"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "AlignLeftInterrupt"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "AlignLeftOffset"
           }
         }
       ]

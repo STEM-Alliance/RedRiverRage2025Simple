@@ -36,7 +36,8 @@ public final class Constants {
 
     // Max speeds
     static public double kMaxSpeed = 5.1; // 5.1 meters per second
-    static public double kMaxAutonomousSpeed = 2.0;
+    static public double kMaxAutonomousSpeed = 2.5; // this ensures that the max speed
+    // (configured in pathplanne app settings) is never exceeded, should match the pathplanner max.
     static public double kMaxAngularSpeed = 3.5 * Math.PI; // 2 rotations per second 
     static public double kMaxAutonomousAngularSpeed = kMaxAngularSpeed;
     static public double kMaxAngularAcceleration = Math.pow(2.0 * Math.PI, 2);

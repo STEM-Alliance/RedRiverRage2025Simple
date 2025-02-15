@@ -169,8 +169,8 @@ public class DrivetrainSubsystem extends SubsystemBase {
       (speeds, feedforwards) -> driveRobotSpeeds(speeds), // Robot-relative driving with optional feedfowards.
 
       new PPHolonomicDriveController(
-        new PIDConstants(1.5, 0.0, 0.0), // Translation PID constants
-        new PIDConstants(1.0, 0.0, 0.0) // Rotation PID constants
+        new PIDConstants(3.5, 0.0, 0.0), // Translation PID constants
+        new PIDConstants(2.25, 0.0, 0.0) // Rotation PID constants
       ),
 
       m_robotConfig, // Robot hardware configuration
