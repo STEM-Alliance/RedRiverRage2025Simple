@@ -91,6 +91,9 @@ public class ApriltagAlignment extends Command {
             SmartDashboard.putNumber("XError", m_xPID.getError());
             SmartDashboard.putNumber("YError", m_yPID.getError());
             SmartDashboard.putNumber("RotError", m_rotPID.getError());
+            SmartDashboard.putNumber("DesiredVx", m_desiredChassisSpeeds.vxMetersPerSecond);
+            SmartDashboard.putNumber("DesiredVy", m_desiredChassisSpeeds.vyMetersPerSecond);
+            SmartDashboard.putNumber("DesiredRot", m_desiredChassisSpeeds.omegaRadiansPerSecond);
             
             m_counter++;
             System.out.println(m_counter + "=> " + x_offset + " " + y_offset + " " + rot);

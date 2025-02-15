@@ -3,6 +3,7 @@ package frc.robot.commands;
 import static frc.robot.Constants.kMaxAutonomousSpeed;
 
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 
 import frc.robot.subsystems.DrivetrainSubsystem;
@@ -61,6 +62,8 @@ public class ApriltagOverride extends Command {
     public boolean isFinished() {
         ChassisSpeeds current = m_drivetrain.getChassisSpeeds();
         ChassisSpeeds alignment = m_alignmentCommand.m_desiredChassisSpeeds;
+
+        SmartDashboard.putNumber("AprilTagCounter", m_counter);
 
         // This counter will count up even if a new frame is not recieved. It will at least
         // ensure that there is a delay between the first detection and the interrupt.

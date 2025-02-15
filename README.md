@@ -89,35 +89,34 @@ ALL motor will have current limits setup. Below is a table of the current limits
   static public int WindowLimit = 15; // This seems safe
 ```
 
-# 2024 Controls
+# 2025 Controls
 ## Controller 1
 *A = 
-*B = Auto aim
+*B = 
 *X = Reset Gyro
 *Y = Reset swerve
-*Left bumper = climb low
-*Right bumper = climb high
-*Left trigger = 
-*Right rigger = 
+*Left bumper = climb extend
+*Right bumper = climb retract
+*Left trigger = Align left 
+*Right rigger = Align right
 *Left stick = translate
 *Right stick = rotate
-*POV up = 
-*POV down = 
+*POV up = Claw extend
+*POV down = Claw retract
 *POV left = 
 *POV right = 
 
 ## Controller 2
-*A = Wrist down
-*B = Wrist up
-*X = Shoot amp
-*Y = Shoot speaker
-*Left bumper = climb low
-*Right bumper = climb high
-*Left trigger = intake note
-*Right rigger = eject note
-*Left stick = arm up/down
-*Right stick = intake fwd/rev
-*POV up = arm setpoint up
-*POV down = arm setpoint down
-*POV left = 
-*POV right = 
+LeftBlue = Move to level 4, adjust arm 71.8"
+LeftRed = Move to level 3, adjust arm 46.3"
+LeftGreen = Move to level 2, adjust arm 30"
+LeftYellow = Move to level 1, adjust arm 17.5"
+Intake is 37.5"
+
+RightGreen = Move to coral load
+RightYellow = travel
+Coin = shoot
+Human = load
+
+
+

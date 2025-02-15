@@ -37,6 +37,7 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot;
 
@@ -240,6 +241,11 @@ public class VisionSubsystem extends SubsystemBase {
             double targetY = target.bestCameraToTarget.getMeasureY().baseUnitMagnitude();
             double targetZ = target.bestCameraToTarget.getMeasureZ().baseUnitMagnitude();
 
+            SmartDashboard.putNumber("ATtargetX", targetX);
+            SmartDashboard.putNumber("ATtargetY", targetY);
+            SmartDashboard.putNumber("ATtargetZ", targetZ);
+            SmartDashboard.putNumber("ATtargetRot", target.bestCameraToTarget.getRotation().getAngle());
+
             double squaredDistance =
                 Math.pow(targetX, 2) +
                 Math.pow(targetY, 2) +
@@ -248,6 +254,9 @@ public class VisionSubsystem extends SubsystemBase {
             if (squaredDistance < bestSquaredDistance) {
                 bestSquaredDistance = squaredDistance;
             }
+            SmartDashboard.putNumber("AT_sq_distance", bestSquaredDistance);
+            SmartDashboard.putNumber("AT_id", target.fiducialId);
+
         }
 
         return bestSquaredDistance;
