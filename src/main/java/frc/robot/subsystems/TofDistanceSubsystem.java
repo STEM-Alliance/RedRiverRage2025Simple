@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 import edu.wpi.first.hal.CANData;
 import edu.wpi.first.wpilibj.CAN;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -47,6 +48,8 @@ public class TofDistanceSubsystem extends SubsystemBase {
     private int m_lastDistance = 0;
     private int m_lastAmbient = 0;
     private int m_lastSignal = 0;
+    private long m_lastTimestamp = RobotController.getFPGATime();
+
     /*
      * To make this clear refer to wpilib TBD. The APP ID consists of the APP class and the APP Index. The App class 
      */
@@ -71,6 +74,7 @@ public class TofDistanceSubsystem extends SubsystemBase {
         m_lastDistance = ((m_data.data[1] & 0xFF) << 8) | (m_data.data[2] & 0xFF);
         m_lastAmbient =  ((m_data.data[3] & 0xFF) << 8) | (m_data.data[4] & 0xFF);
         m_lastSignal =   ((m_data.data[5] & 0xFF) << 8) | (m_data.data[6] & 0xFF);
+        m_lastTimestamp = RobotController.getFPGATime();
         SmartDashboard.putNumber("TOFDistance", m_lastDistance);
         SmartDashboard.putNumber("TOFStatus", m_lastStatus);
         SmartDashboard.putNumber("TOFAmbient", m_lastAmbient);
@@ -112,4 +116,21 @@ public class TofDistanceSubsystem extends SubsystemBase {
       return m_lastSignal;
     }
 
+    public boolean is_timed_out() {
+      return (RobotController.getFPGATime() - m_lastTimestamp) > (m_timeout * 1000);
+    }
+
+    /**
+     * This should usually be used with a debouncer, 0.06s (3 loops) seems reasonable.
+    */
+    public boolean is_within_threshold(int threshold, boolean timedOutDefault) {
+      boolean isTimedOut = is_timed_out();
+      boolean isWithinThreshold = timedOutDefault;
+
+      if (!isTimedOut) {
+        isWithinThreshold = ((m_lastStatus == 0) && (m_lastDistance < threshold));
+      }
+
+      return isWithinThreshold;
+    }
 }
