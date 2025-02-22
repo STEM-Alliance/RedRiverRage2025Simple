@@ -64,25 +64,25 @@ public final class Constants {
     static public double kSwerveKa = 0.0;
 
     // Swerve Hardware
-    static public double kWheelRadius = 0.04826;//0.0508 * (1.0 - 0.0823);
+    static public double kWheelRadius = 0.04826;
     static public double kDriveGearReduction = 6.12;
     static public double kTurningGearReduction = 12.8;
     
     // FL, FR, BL, BR
     static public Translation2d[] kSwerveTranslations = new Translation2d[]{
-        new Translation2d(0.2286, 0.22225),
-        new Translation2d(0.2286, -0.22225),
-        new Translation2d(-0.2286, 0.22225),
-        new Translation2d(-0.2286, -0.22225)
+        new Translation2d(0.276, 0.276),
+        new Translation2d(0.276, -0.276),
+        new Translation2d(-0.276, 0.276),
+        new Translation2d(-0.276, -0.276)
     };
 
     // Module Index, Drive Motor Channel, Swerve Motor Channel, CANCoder Channel
-    static public int[] kSwerveFLCanID = new int[]{0, 1, 2, 33};
-    static public int[] kSwerveFRCanID = new int[]{1, 3, 4, 31};
-    static public int[] kSwerveBLCanID = new int[]{2, 5, 6, 30};
-    static public int[] kSwerveBRCanID = new int[]{3, 7, 8, 32};
+    static public int[] kSwerveFLCanID = new int[]{0, 1, 2, 3};
+    static public int[] kSwerveFRCanID = new int[]{1, 4, 5, 6};
+    static public int[] kSwerveBLCanID = new int[]{2, 7, 8, 9};
+    static public int[] kSwerveBRCanID = new int[]{3, 10, 11, 12};
 
-    static public int kPigeon2CanID = 40;
+    static public int kPigeon2CanID = 13;
 
     // NOTE: These seem to drift
     //static public double[] kZeroPosition = new double[]{0.963, 0.486, 0.070, 0.093};
@@ -90,12 +90,12 @@ public final class Constants {
     static public double kEncoderRes = 4096;
 
     static public enum kElevatorSetpoints {
-        L4      (50.0),
-        L3      (40.0),
-        L2      (25.0),
-        L1      (15.0),
-        IDLE    (20.0),
-        INTAKE  (26.5);
+        L4      (170),
+        L3      (140),
+        L2      (100),
+        L1      (20),
+        IDLE    (0),
+        INTAKE  (10);
         
         private final double m_elevatorSetpoint;
 
@@ -107,13 +107,13 @@ public final class Constants {
     }
 
     static public enum kShooterSetpoints {
-        L4      (50.0),
-        L3      (40.0),
-        L2      (40.0),
-        L1      (40.0),
-        INTAKE  (26.5),
-        IDLE    (25.0),
-        SHOOT   (26.5);
+        L4      (0.25),
+        L3      (0.125),
+        L2      (0.125),
+        L1      (0.125),
+        INTAKE  (-0.125),
+        IDLE    (-0.25),
+        SHOOT   (-0.25);
 
         private final double m_shooterSetpoints;
 

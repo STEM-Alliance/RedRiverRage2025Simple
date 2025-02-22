@@ -12,7 +12,7 @@
         "y": 1.9747561217558376
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Drive Out RT End"
     },
     {
       "anchor": {
@@ -25,7 +25,7 @@
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Reef Right"
     }
   ],
   "rotationTargets": [],
@@ -45,7 +45,7 @@
     "rotation": 54.0
   },
   "reversed": false,
-  "folder": null,
+  "folder": "Right 3 L4 Auto",
   "idealStartingState": {
     "velocity": 0,
     "rotation": 119.99999999999999

@@ -60,7 +60,7 @@ public class VisionSubsystem extends SubsystemBase {
     private Matrix<N3, N1> curStdDevs;
 
     private final AprilTagFieldLayout m_apriltagLayout = AprilTagFieldLayout.loadField(
-        AprilTagFields.k2025Reefscape
+        AprilTagFields.k2025ReefscapeWelded
     );
 
     // Simulation

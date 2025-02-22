@@ -4,6 +4,11 @@
 
 package frc.robot.misc;
 
+import static edu.wpi.first.units.Units.*;
+import static frc.robot.Constants.*;
+
+import frc.robot.utils.DataLogHelpers;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
@@ -11,31 +16,23 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.wpilibj.AnalogEncoder;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.Constants;
-import frc.robot.utils.DataLogHelpers;
 
-import com.revrobotics.spark.SparkMax;
-import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
-import com.revrobotics.spark.config.SparkMaxConfig;
-import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.SparkBase.PersistMode;
-import com.revrobotics.spark.SparkBase.ResetMode;
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.CANcoder;
-import com.revrobotics.RelativeEncoder;
+import com.ctre.phoenix6.hardware.TalonFX;
 
 public class SwerveModule {
-  private static final double kModuleMaxAngularVelocity = Constants.kMaxAngularSpeed;
-  private static final double kModuleMaxAngularAcceleration = Constants.kMaxAngularAcceleration;
+  private static final double kModuleMaxAngularVelocity = kMaxAngularSpeed;
+  private static final double kModuleMaxAngularAcceleration = kMaxAngularAcceleration;
 
   private int m_swerveIndex = -1;
 
-  private final SparkMax m_driveMotor;
-  private final SparkMax m_turningMotor;
-  private RelativeEncoder m_driveEncoder;
-  private RelativeEncoder m_turningEncoder;
+  private final TalonFX m_driveMotor;
+  private final TalonFX m_turningMotor;
+  // private RelativeEncoder m_driveEncoder;
+  // private RelativeEncoder m_turningEncoder;
 
   //private final AnalogInput m_absolutePos;
   //private final AnalogEncoder m_absolutePos;
@@ -43,23 +40,23 @@ public class SwerveModule {
 
   // Gains are for example purposes only - must be determined for your own robot!
   private final PIDController m_drivePIDController = new PIDController(
-    Constants.kDriveKp, Constants.kDriveKi, Constants.kDriveKd);
+    kDriveKp, kDriveKi, kDriveKd);
 
   // Gains are for example purposes only - must be determined for your own robot!
   private final ProfiledPIDController m_turningPIDController =
       new ProfiledPIDController(
-          Constants.kSwerveKp,
-          Constants.kSwerveKi,
-          Constants.kSwerveKd,
+          kSwerveKp,
+          kSwerveKi,
+          kSwerveKd,
           new TrapezoidProfile.Constraints(
               kModuleMaxAngularVelocity, kModuleMaxAngularAcceleration));
 
   // Gains are for example purposes only - must be determined for your own robot!
   private SimpleMotorFeedforward m_driveFeedforward = new SimpleMotorFeedforward(
-    Constants.kDriveKs, Constants.kDriveKv, Constants.kDriveKa);
+    kDriveKs, kDriveKv, kDriveKa);
   
   private SimpleMotorFeedforward m_turnFeedforward = new SimpleMotorFeedforward(
-    Constants.kSwerveKs, Constants.kSwerveKv);
+    kSwerveKs, kSwerveKv);
 
   /**
    * Constructs a SwerveModule with a drive motor, turning motor, drive encoder and turning encoder.
@@ -77,44 +74,34 @@ public class SwerveModule {
       int turningMotorChannel,
       int cancoderChannel) {
     m_swerveIndex = swerveIndex;
-    m_driveMotor = new SparkMax(driveMotorChannel, MotorType.kBrushless);
-    m_turningMotor = new SparkMax(turningMotorChannel, MotorType.kBrushless);
-
-    SparkMaxConfig driveConfig = new SparkMaxConfig();
-
-    driveConfig
-      .idleMode(IdleMode.kCoast)
-      .smartCurrentLimit(Constants.NeoLimit);
-    driveConfig.encoder
-      .positionConversionFactor(2.0 * Math.PI * Constants.kWheelRadius / Constants.kDriveGearReduction)// * (1 - 0.0234))
-      .velocityConversionFactor(2.0 * Math.PI * Constants.kWheelRadius / Constants.kDriveGearReduction / 60.0);// * (1 - 0.0234));
-        
-    m_driveMotor.configure(driveConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-
-    SparkMaxConfig turnConfig = new SparkMaxConfig();
-
-    turnConfig
-      .idleMode(IdleMode.kBrake)
-      .smartCurrentLimit(Constants.NeoLimit);
-      turnConfig.encoder
-      .positionConversionFactor(2.0 * Math.PI / Constants.kTurningGearReduction)
-      .velocityConversionFactor(2.0 * Math.PI / Constants.kTurningGearReduction / 60.0);
-
-    m_turningMotor.configure(turnConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-
-    //m_absolutePos = new AnalogEncoder(analogInputChannel);
+    m_driveMotor = new TalonFX(driveMotorChannel);
+    m_turningMotor = new TalonFX(turningMotorChannel);
     m_cancoder = new CANcoder(cancoderChannel);
 
-    m_driveEncoder = m_driveMotor.getEncoder();
-    m_turningEncoder = m_turningMotor.getEncoder();
+    CurrentLimitsConfigs currentLimits = new CurrentLimitsConfigs();
 
-    m_driveEncoder.setPosition(0);
-    m_turningEncoder.setPosition(0);
+    currentLimits
+        .withStatorCurrentLimitEnable(true)
+        .withSupplyCurrentLimitEnable(true)
+        .withStatorCurrentLimit(Amps.of(40.0))
+        .withSupplyCurrentLimit(Amps.of(40.0))
+        .withSupplyCurrentLowerLimit(Amps.of(40.0));
+
+    m_driveMotor.getConfigurator().apply(currentLimits);
+    m_turningMotor.getConfigurator().apply(currentLimits);
 
     // Limit the PID Controller's input range between -pi and pi and set the input
     // to be continuous.
     // TODO: I think this needs to move into the PID controller of the spark max itself.
     m_turningPIDController.enableContinuousInput(-Math.PI, Math.PI);
+  }
+
+  public final double getDriveEncoderPosition() {
+    return m_driveMotor.getPosition().getValueAsDouble() * (2 * Math.PI * kWheelRadius / kDriveGearReduction);
+  }
+
+  public final double getDriveEncoderVelocity() {
+    return m_driveMotor.getVelocity().getValueAsDouble() * (2 * Math.PI * kWheelRadius / kDriveGearReduction / 60);
   }
 
   private final SwerveModuleState m_swerveModuleState = new SwerveModuleState();
@@ -125,17 +112,17 @@ public class SwerveModule {
    * @return The current state of the module.
    */
   public SwerveModuleState getState() {
-    m_swerveModuleState.speedMetersPerSecond = -m_driveEncoder.getVelocity();
+    m_swerveModuleState.speedMetersPerSecond = -getDriveEncoderVelocity();
     m_swerveModuleState.angle = new Rotation2d(getAbsPos());
 
     return m_swerveModuleState;
   }
 
-  public SparkMax getDriveMotor() {
+  public TalonFX getDriveMotor() {
     return m_driveMotor;
   }
 
-  public SparkMax getTurningMotor() {
+  public TalonFX getTurningMotor() {
     return m_turningMotor;
   }
 
@@ -147,7 +134,7 @@ public class SwerveModule {
    * @return The current position of the module.
    */
   public SwerveModulePosition getPosition() {
-    m_swerveModulePosition.distanceMeters = -m_driveEncoder.getPosition();
+    m_swerveModulePosition.distanceMeters = -getDriveEncoderPosition();
     m_swerveModulePosition.angle = new Rotation2d(getAbsPos());
 
     return m_swerveModulePosition;
@@ -176,7 +163,7 @@ public class SwerveModule {
 
     // Calculate the drive output from the drive PID controller.
     final double drivePID =
-        m_drivePIDController.calculate(m_driveEncoder.getVelocity(), desiredState.speedMetersPerSecond);
+        m_drivePIDController.calculate(getDriveEncoderVelocity(), desiredState.speedMetersPerSecond);
 
     final double driveFF = m_driveFeedforward.calculate(desiredState.speedMetersPerSecond);
 
@@ -186,13 +173,13 @@ public class SwerveModule {
 
     final double turnFF = m_turnFeedforward.calculate(m_turningPIDController.getSetpoint().velocity);
 
-    m_driveMotor.set(drivePID + driveFF);
-    m_turningMotor.set(turnPID + turnFF);
+    m_driveMotor.set(MathUtil.clamp(drivePID + driveFF, -1, 1));
+    m_turningMotor.set(MathUtil.clamp(turnPID + turnFF, -1, 1));
 
     DataLogHelpers.logDouble(getAbsPos(), "Swerve_rot_enc_" + m_swerveIndex);
-    DataLogHelpers.logDouble(m_driveEncoder.getPosition(), "Swerve_drive_pos_" + m_swerveIndex);
-    DataLogHelpers.logDouble(m_driveEncoder.getVelocity(), "Swerve_drive_vel_" + m_swerveIndex);
-    SmartDashboard.putNumber("Swerve_drive_enc" + m_swerveIndex, m_driveEncoder.getPosition());
+    DataLogHelpers.logDouble(getDriveEncoderPosition(), "Swerve_drive_pos_" + m_swerveIndex);
+    DataLogHelpers.logDouble(getDriveEncoderVelocity(), "Swerve_drive_vel_" + m_swerveIndex);
+    SmartDashboard.putNumber("Swerve_drive_enc" + m_swerveIndex, getDriveEncoderPosition());
   }
 
   public void setGains(double kp, double ki, double kd, double ks, double kv) {
@@ -203,35 +190,9 @@ public class SwerveModule {
     m_turnFeedforward = new SimpleMotorFeedforward(ks, kv);
   }
 
-  // private double getSwerveEncoderSyncedPos(double syncedAbsPos) {
-  //   /* Calculate the error and wrap it around to the nearest half
-  //   If the current rotation was 50, and the target was 4096, this
-  //   would set the encoders rotation to ~+0.1 rotations instead of ~-12.5 */
-
-  //   double diffPos = getAbsPos() - syncedAbsPos;
-  //   if (diffPos < 0)
-  //   {
-  //     diffPos += 1;
-  //   }
-  //   // if (diffPos > Constants.kEncoderRes / 2)
-  //   // {
-  //   //   diffPos -= Constants.kEncoderRes;
-  //   // }
-  //   return (diffPos * 2.0 * Math.PI);// / Constants.kTurningGearReduction); /// Constants.kEncoderRes;
-  // }
-
-  public void syncSwerveEncoder(double syncedAbsPos) {
-    //m_turningEncoder.setPosition(getSwerveEncoderSyncedPos(syncedAbsPos));
-    m_turningEncoder.setPosition(getAbsPos() / Constants.kTurningGearReduction);
-  }
-
   public final double getAbsPos() {
     return (m_cancoder.getAbsolutePosition().getValueAsDouble() + 0.5) * 2.0 * Math.PI;
   }
-
-  // public double getAbsPos() {
-  //   return m_absolutePos.get();
-  // }
 
   public void setBrake(boolean enabled) {
     if (enabled) {

@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 7.822,
-        "y": 3.276703974921901
+        "x": 7.1675,
+        "y": 3.275
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.137669405725313,
-        "y": 2.9266429914497167
+        "x": 6.629554444564724,
+        "y": 3.1082760438537798
       },
       "isLocked": false,
       "linkedName": null
@@ -20,19 +20,19 @@
         "y": 2.7
       },
       "prevControl": {
-        "x": 5.547860089371657,
-        "y": 2.762110163709358
+        "x": 5.500938378655155,
+        "y": 2.7767158912022536
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Drive Out RT End"
     }
   ],
   "rotationTargets": [],
   "constraintZones": [
     {
       "name": "Constraints Zone",
-      "minWaypointRelativePos": 0.6322580645161312,
+      "minWaypointRelativePos": 0.6838709677419363,
       "maxWaypointRelativePos": 1.0,
       "constraints": {
         "maxVelocity": 1.5,
@@ -59,7 +59,7 @@
     "rotation": 119.99999999999999
   },
   "reversed": false,
-  "folder": null,
+  "folder": "Right 3 L4 Auto",
   "idealStartingState": {
     "velocity": 0,
     "rotation": 180.0

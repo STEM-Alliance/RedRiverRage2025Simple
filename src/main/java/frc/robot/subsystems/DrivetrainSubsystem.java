@@ -297,17 +297,17 @@ public class DrivetrainSubsystem extends SubsystemBase {
         robotSpeeds.omegaRadiansPerSecond, -maxRotationalVelocity, maxRotationalVelocity
       );
 
-      SmartDashboard.putNumber("PathplannerVX", robotSpeeds.vxMetersPerSecond);
-      SmartDashboard.putNumber("PathplannerVY", robotSpeeds.vyMetersPerSecond);
-      SmartDashboard.putNumber("PathplannerOmega", robotSpeeds.omegaRadiansPerSecond);
+      // SmartDashboard.putNumber("PathplannerVX", robotSpeeds.vxMetersPerSecond);
+      // SmartDashboard.putNumber("PathplannerVY", robotSpeeds.vyMetersPerSecond);
+      // SmartDashboard.putNumber("PathplannerOmega", robotSpeeds.omegaRadiansPerSecond);
     }
 
     var targetSpeeds = ChassisSpeeds.discretize(robotSpeeds, 0.02);
     var swerveModuleStates = m_kinematics.toSwerveModuleStates(targetSpeeds);
 
-    DataLogHelpers.logDouble(robotSpeeds.vxMetersPerSecond, "Vx");
-    DataLogHelpers.logDouble(robotSpeeds.vyMetersPerSecond, "Vy");
-    DataLogHelpers.logDouble(robotSpeeds.omegaRadiansPerSecond, "Omega");
+    // DataLogHelpers.logDouble(robotSpeeds.vxMetersPerSecond, "Vx");
+    // DataLogHelpers.logDouble(robotSpeeds.vyMetersPerSecond, "Vy");
+    // DataLogHelpers.logDouble(robotSpeeds.omegaRadiansPerSecond, "Omega");
 
     SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, Constants.kMaxSpeed);
 
@@ -397,13 +397,6 @@ public class DrivetrainSubsystem extends SubsystemBase {
     m_backRight.setGains(kp, ki, kd, ks, kv);
   }
 
-  public void homeSwerve() {
-    System.out.println("Setting the zero position for the turning motors");
-    for (int i = 0; i < 4; i++) {
-      m_modules[i].syncSwerveEncoder(Constants.kZeroPosition[i]);
-    }    
-  }
-
   public void printHomePos() {
     double abspos[] = new double[4];
     for (int i = 0; i < 4; i++) { 
@@ -414,16 +407,17 @@ public class DrivetrainSubsystem extends SubsystemBase {
   }
 
   private final void driveVoltage(Voltage outputVolts) {
-    for (SwerveModule module : m_modules) {
-      module.getDriveMotor().setVoltage(outputVolts);
-    }
+    System.out.println("Unimplemented.");
+    // for (SwerveModule module : m_modules) {
+    //   module.getDriveMotor().setVoltage(outputVolts);
+    // }
   }
 
   private final double getMotorOutput() {
     double summedAppliedOutput = 0.0;
 
     for (SwerveModule module : m_modules) {
-      summedAppliedOutput += module.getDriveMotor().getAppliedOutput();
+      summedAppliedOutput += module.getDriveMotor().get();
     }
 
     return summedAppliedOutput / m_modules.length;
@@ -433,7 +427,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
     double summedDistance = 0.0;
 
     for (SwerveModule module : m_modules) {
-      summedDistance += module.getDriveMotor().getEncoder().getPosition();
+      summedDistance += module.getDriveEncoderPosition();
     }
 
     return summedDistance / m_modules.length;
@@ -443,7 +437,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
     double summedVelocity = 0.0;
 
     for (SwerveModule module : m_modules) {
-      summedVelocity += module.getDriveMotor().getEncoder().getVelocity();
+      summedVelocity += module.getDriveEncoderVelocity();
     }
 
     return summedVelocity / m_modules.length;

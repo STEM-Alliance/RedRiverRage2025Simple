@@ -3,36 +3,36 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.606,
-        "y": 0.697
+        "x": 1.6064644670904542,
+        "y": 0.6972565026558004
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.405040935468112,
-        "y": 1.4386914213619777
+        "x": 2.405505402558566,
+        "y": 1.438947924017778
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Reef Right"
     },
     {
       "anchor": {
-        "x": 3.720709474746002,
-        "y": 2.690509361112248
+        "x": 3.709598875036706,
+        "y": 2.6680533103617745
       },
       "prevControl": {
-        "x": 1.9645797741482314,
-        "y": 1.0049807988684072
+        "x": 1.9534691744389354,
+        "y": 0.9825247481179336
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "RB Reef"
     }
   ],
   "rotationTargets": [],
   "constraintZones": [
     {
       "name": "Constraints Zone",
-      "minWaypointRelativePos": 0.9260545905707175,
+      "minWaypointRelativePos": 0.9300248138957787,
       "maxWaypointRelativePos": 1.0,
       "constraints": {
         "maxVelocity": 1.5,
@@ -59,7 +59,7 @@
     "rotation": 59.99999999999999
   },
   "reversed": false,
-  "folder": null,
+  "folder": "Right 3 L4 Auto",
   "idealStartingState": {
     "velocity": 0,
     "rotation": 54.0

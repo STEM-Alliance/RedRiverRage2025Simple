@@ -79,8 +79,7 @@ public class TofDistanceSubsystem extends SubsystemBase {
         SmartDashboard.putNumber("TOFStatus", m_lastStatus);
         SmartDashboard.putNumber("TOFAmbient", m_lastAmbient);
         SmartDashboard.putNumber("TOFSignal", m_lastSignal);
-        System.out.println("TOF: " + m_data.data[0] + "," + m_data.data[1] + "," + m_data.data[2] + ",");
-
+        //System.out.println("TOF: " + m_data.data[0] + "," + m_data.data[1] + "," + m_data.data[2] + ",");
       }
     }
 

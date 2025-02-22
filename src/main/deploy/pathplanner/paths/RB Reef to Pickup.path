@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.721,
-        "y": 2.691
+        "x": 3.709598875036706,
+        "y": 2.6680533103617745
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.973198658572879,
-        "y": 2.020456656253396
+        "x": 2.9617975336095848,
+        "y": 1.9975099666151706
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "RB Reef"
     },
     {
       "anchor": {
-        "x": 1.606,
-        "y": 0.697
+        "x": 1.6064644670904542,
+        "y": 0.6972565026558004
       },
       "prevControl": {
-        "x": 2.2955060285955513,
-        "y": 1.2955133879712228
+        "x": 2.2959704956860056,
+        "y": 1.2957698906270232
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Reef Right"
     }
   ],
   "rotationTargets": [],
@@ -45,7 +45,7 @@
     "rotation": 54.0
   },
   "reversed": false,
-  "folder": null,
+  "folder": "Right 3 L4 Auto",
   "idealStartingState": {
     "velocity": 0,
     "rotation": 59.99999999999999
