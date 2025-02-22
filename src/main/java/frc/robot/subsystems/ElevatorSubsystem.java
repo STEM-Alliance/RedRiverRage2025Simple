@@ -79,7 +79,9 @@ public class ElevatorSubsystem extends SubsystemBase {
         shooterConfig.encoder
             .positionConversionFactor(1.0)
             .velocityConversionFactor(1.0);
-            
+        shooterConfig.limitSwitch.
+            forwardLimitSwitchEnabled(false).
+            reverseLimitSwitchEnabled(false);
 
         m_elevatorMotor.configure(elevatorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
         m_shooterMotor.configure(shooterConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
