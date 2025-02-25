@@ -50,11 +50,14 @@ public class RobotContainer {
   private final SendableChooser<Command> m_autoChooser;
   private final Field2d m_field = new Field2d();
 
+  private final CommandXboxController m_driverController = new CommandXboxController(kDriverControllerPort);
+  private final CommandJoystick m_operatorButtonPanel = new CommandJoystick(kOperatorButtonPanelPort);
+
   private final ElevatorSubsystem m_elevator = new ElevatorSubsystem(12, 10);
   private final DrivetrainSubsystem m_drivetrain = new DrivetrainSubsystem(m_field);
 
   private final ClimbSubsystem m_climb = new ClimbSubsystem(15, 14, 13, 12);
-  private final IntakeSubsystem m_intake = new IntakeSubsystem(11, 0);
+  private final IntakeSubsystem m_intake = new IntakeSubsystem(11, 0, m_driverController);
 
   // private final VisionSubsystem[] m_cameras = new VisionSubsystem[]{
   //   new VisionSubsystem(
@@ -78,11 +81,6 @@ public class RobotContainer {
   //   )
   // };
 
-  private final CommandXboxController m_driverController = new CommandXboxController(kDriverControllerPort);
-  private final CommandXboxController m_operatorController = new CommandXboxController(kOperatorControllerPort);
-  private final CommandJoystick m_operatorButtonPanel = new CommandJoystick(kOperatorButtonPanelPort);
-  //private final IntakeSubsystem m_intake = new IntakeSubsystem(15, 16);
-
   // elevator is 12, rotation is 10, shooter is 11
   // shooter and elevator brushless, rotation brushed
 
@@ -98,20 +96,31 @@ public class RobotContainer {
   private final void configureControllers() {
     // m_driverController.a();
     // m_driverController.b();
-    m_driverController.x().onTrue(m_drivetrain.resetGyro());
+    m_driverController.y().onTrue(m_drivetrain.resetGyro());
     // m_driverController.y();
 
-    m_driverController.leftBumper().onTrue(m_climb.toggleClimber());
-    m_driverController.rightBumper().onTrue(m_climb.toggleClaw());
+    // m_driverController.leftBumper().onTrue(m_climb.toggleClimber());
+    // m_driverController.rightBumper().onTrue(m_climb.toggleClaw());
 
     // m_driverController.leftTrigger().whileTrue(new ApriltagAlignment(-1, 0.425, -0.15, m_cameras, m_drivetrain, true));
     // m_driverController.rightTrigger().whileTrue(new ApriltagAlignment(-1, 0.425, 0.15, m_cameras, m_drivetrain, true));
 
+    m_driverController.leftBumper().onTrue(m_elevator.cw());
+    m_driverController.rightBumper().onTrue(m_elevator.ccw());
+    //m_driverController.b().whileTrue(m_elevator.up());
+    //m_driverController.a().whileTrue(m_elevator.down());
+    m_driverController.povLeft().whileTrue(m_intake.startShooting());
+    m_driverController.povRight().whileTrue(m_elevator.ccw());
+    m_driverController.povUp().onTrue(m_intake.startIntaking());
+    m_driverController.povDown().onTrue(m_intake.stopIntaking());
+    m_driverController.a().onTrue(m_elevator.setState(kElevatorSetpoints.L1, kShooterSetpoints.L1));
+    m_driverController.b().onTrue(m_elevator.setState(kElevatorSetpoints.L2, kShooterSetpoints.L2));
+    m_driverController.x().onTrue(m_elevator.setState(kElevatorSetpoints.L3, kShooterSetpoints.L3));
+    m_driverController.start().onTrue(m_elevator.setState(kElevatorSetpoints.L4, kShooterSetpoints.L4));
+
     // The drivetrain is responsible for the teleop drive command,
     // so this doesn't need to be changed between different drivetrains.
     m_drivetrain.setDefaultCommand(m_drivetrain.getTeleopDriveCommand(m_driverController));
-
-    //m_elevator.setController(m_driverController);
 
     // m_operatorButtonPanel.button(2).onTrue(m_elevator.setState(
     //   kElevatorSetpoints.L4,
@@ -140,14 +149,6 @@ public class RobotContainer {
     // m_operatorButtonPanel.button(10).onTrue(
     //   m_elevator.startShooting()
     // ).onFalse(m_elevator.stopShooting());
-
-    m_driverController.b().whileTrue(m_elevator.up());
-    m_driverController.a().whileTrue(m_elevator.down());
-    m_driverController.povLeft().whileTrue(m_elevator.cw());
-    m_driverController.povRight().whileTrue(m_elevator.ccw());
-    m_driverController.povUp().onTrue(m_intake.startIntaking());
-    m_driverController.povDown().onTrue(m_intake.stopIntaking());
-    m_driverController.x().onTrue(m_elevator.setState(kElevatorSetpoints.L2, kShooterSetpoints.L2));
 
     // m_driverController
     //     .a()

@@ -11,11 +11,17 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.AnalogEncoder;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
@@ -37,12 +43,12 @@ public class ElevatorSubsystem extends SubsystemBase {
 
     private double m_elevatorSetpoint = 0.0;
     private final ProfiledPIDController m_elevatorPID = new ProfiledPIDController(
-        0.0, 0.0, 0.0, new TrapezoidProfile.Constraints(0.0, 0.0)
+        0.0, 0.0, 0.0, new TrapezoidProfile.Constraints(Constants.kElevatorMaxVelocity, Constants.kElevatorMaxAcceleration)
     );
 
     private double m_shooterSetpoint = 0.0;
     private final ProfiledPIDController m_shooterPID = new ProfiledPIDController(
-        0.0, 0.0, 0.0, new TrapezoidProfile.Constraints(0.0, 0.0)
+        0.0, 0.0, 0.0, new TrapezoidProfile.Constraints(Constants.kShooterMaxVelocity, Constants.kShooterMaxVelocity)
     );
 
     //private final IntakeSubsystem m_intake = new IntakeSubsystem(11, 0);
@@ -70,8 +76,10 @@ public class ElevatorSubsystem extends SubsystemBase {
             .smartCurrentLimit(Constants.NeoLimit);
         // I tried to call the invert function and change the factor to -1. In both cases it crashes
         elevatorConfig.encoder
-            .positionConversionFactor(1.0)
-            .velocityConversionFactor(1.0);
+            // Magic numbers found through trial and error; ask Joe why our CAD isnt accurate.
+            // (output is in inches, inches per second(?))
+            .positionConversionFactor((1.5 / 0.54969295458888695567845703186279 * Math.PI) / 25.0)
+            .velocityConversionFactor((1.5 / 0.54969295458888695567845703186279 * Math.PI) / 25.0 / 60.0);
         
         shooterConfig
             .idleMode(IdleMode.kBrake)
@@ -113,7 +121,9 @@ public class ElevatorSubsystem extends SubsystemBase {
     }
 
     private final void elevatorControlLoop() {
-        double elevatorOutput = MathUtil.clamp(m_elevatorPID.calculate(-m_elevatorEncoder.getPosition()), -1.0, 1.0);
+        SmartDashboard.putData("ElevatorPID", m_elevatorPID);
+        double elevatorOutput = MathUtil.clamp(-m_elevatorPID.calculate(-m_elevatorEncoder.getPosition()), -0.5, 0.5);
+        SmartDashboard.putNumber("elevatorOutput", elevatorOutput);
 
         DataLogHelpers.logDouble(elevatorOutput, "ElevatorSubsystem/Elevator PID Output");
         DataLogHelpers.logDouble(m_elevatorSetpoint, "ElevatorSubsystem/Elevator PID Goal");
@@ -123,7 +133,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     }
 
     public final void setShooterSetpoint(double setpoint) {
-        m_shooterSetpoint = MathUtil.clamp(setpoint, 0.0, 0.0);
+        m_shooterSetpoint = MathUtil.clamp(setpoint, -1, 1);
         m_shooterPID.setGoal(m_shooterSetpoint);
     }
 
@@ -132,7 +142,9 @@ public class ElevatorSubsystem extends SubsystemBase {
     }
 
     private final void shooterControlLoop() {
-        double shooterOutput = MathUtil.clamp(m_shooterPID.calculate(0.0), 0.0, 0.0);
+        SmartDashboard.putData("ShooterPID", m_shooterPID);
+        double shooterOutput = MathUtil.clamp(m_shooterPID.calculate(m_intakePos.getPosition()), -0.25, 0.25);
+        SmartDashboard.putNumber("ShooterOutput", shooterOutput);
 
         DataLogHelpers.logDouble(shooterOutput, "ElevatorSubsystem/Shooter PID Output");
         DataLogHelpers.logDouble(m_shooterSetpoint, "ElevatorSubsystem/Shooter PID Goal");

@@ -40,14 +40,14 @@ public class TofDistanceSubsystem extends SubsystemBase {
     private final int MFG_CODE = 20;
     private final int API_CLASS = 5;
     private final int API_INDEX = 0; 
-    private final int m_timeout = 10;
+    private final int m_timeout = 50;
     private final CAN m_can;
 
     private CANData m_data = new CANData();
-    private int m_lastStatus = 0;
-    private int m_lastDistance = 0;
-    private int m_lastAmbient = 0;
-    private int m_lastSignal = 0;
+    private int m_lastStatus = -1;
+    private int m_lastDistance = -1;
+    private int m_lastAmbient = -1;
+    private int m_lastSignal = -1;
     private long m_lastTimestamp = RobotController.getFPGATime();
 
     /*
@@ -75,13 +75,22 @@ public class TofDistanceSubsystem extends SubsystemBase {
         m_lastAmbient =  ((m_data.data[3] & 0xFF) << 8) | (m_data.data[4] & 0xFF);
         m_lastSignal =   ((m_data.data[5] & 0xFF) << 8) | (m_data.data[6] & 0xFF);
         m_lastTimestamp = RobotController.getFPGATime();
-        SmartDashboard.putNumber("TOFDistance", m_lastDistance);
-        SmartDashboard.putNumber("TOFStatus", m_lastStatus);
-        SmartDashboard.putNumber("TOFAmbient", m_lastAmbient);
-        SmartDashboard.putNumber("TOFSignal", m_lastSignal);
         //System.out.println("TOF: " + m_data.data[0] + "," + m_data.data[1] + "," + m_data.data[2] + ",");
       }
-    }
+      else
+      {
+        m_lastStatus = -1;
+        m_lastDistance = -1;
+        m_lastAmbient = -1;
+        m_lastSignal = -1;
+        m_lastTimestamp = RobotController.getFPGATime();
+      }
+
+      SmartDashboard.putNumber("TOFDistance", m_lastDistance);
+      SmartDashboard.putNumber("TOFStatus", m_lastStatus);
+      SmartDashboard.putNumber("TOFAmbient", m_lastAmbient);
+      SmartDashboard.putNumber("TOFSignal", m_lastSignal);
+  }
 
     /**
      * Returns the last detected status code.
@@ -122,14 +131,7 @@ public class TofDistanceSubsystem extends SubsystemBase {
     /**
      * This should usually be used with a debouncer, 0.06s (3 loops) seems reasonable.
     */
-    public boolean is_within_threshold(int threshold, boolean timedOutDefault) {
-      boolean isTimedOut = is_timed_out();
-      boolean isWithinThreshold = timedOutDefault;
-
-      if (!isTimedOut) {
-        isWithinThreshold = ((m_lastStatus == 0) && (m_lastDistance < threshold));
-      }
-
-      return isWithinThreshold;
+    public boolean is_within_threshold(int threshold) {
+      return ((m_lastStatus == 0) && (m_lastDistance < threshold) && (m_lastDistance != -1));
     }
 }

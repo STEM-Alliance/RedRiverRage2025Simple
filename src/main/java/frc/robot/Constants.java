@@ -89,6 +89,9 @@ public final class Constants {
     static public double[] kZeroPosition = new double[]{0.238, 0.2101, 0.704, 0.092};
     static public double kEncoderRes = 4096;
 
+    /********************************************
+     * Elevator and Shooter
+     *******************************************/
     static public enum kElevatorSetpoints {
         L4      (170),
         L3      (140),
@@ -123,6 +126,14 @@ public final class Constants {
 
         public double getAsDouble() {return m_shooterSetpoints;}
     }
+
+    static public double kElevatorMaxVelocity = 1;
+    static public double kElevatorMaxAcceleration = 1;
+    static public double kShooterMaxVelocity = 1;
+    static public double kShooterMaxAcceleration = 1;
+
+    static public int kRumbleTimer = 100;
+
     
     /********************************************
      * Motor Current Limits
