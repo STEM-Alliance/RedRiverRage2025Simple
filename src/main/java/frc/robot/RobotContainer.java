@@ -105,8 +105,8 @@ public class RobotContainer {
     // m_driverController.leftTrigger().whileTrue(new ApriltagAlignment(-1, 0.425, -0.15, m_cameras, m_drivetrain, true));
     // m_driverController.rightTrigger().whileTrue(new ApriltagAlignment(-1, 0.425, 0.15, m_cameras, m_drivetrain, true));
 
-    m_driverController.leftBumper().onTrue(m_elevator.cw());
-    m_driverController.rightBumper().onTrue(m_elevator.ccw());
+    m_driverController.leftBumper().whileTrue(m_elevator.cw());
+    m_driverController.rightBumper().whileTrue(m_elevator.ccw());
     //m_driverController.b().whileTrue(m_elevator.up());
     //m_driverController.a().whileTrue(m_elevator.down());
     m_driverController.povLeft().whileTrue(m_intake.startShooting());

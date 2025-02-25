@@ -43,7 +43,7 @@ public class IntakeSubsystem extends SubsystemBase {
     }
 
     public void periodic() {
-        if (m_coralDetected & m_previousCoralDetected)
+        if (m_coralDetected & !m_previousCoralDetected)
         {
             m_rumbleCounter = Constants.kRumbleTimer;
         }
@@ -59,13 +59,22 @@ public class IntakeSubsystem extends SubsystemBase {
         }
     }
 
+    public final boolean checkAndStopIntake()
+    {
+        if (m_tofSensorDebouncer.calculate(isIntakeLoaded()))
+        {
+            m_intakeMotor.set(0);
+            return true;
+        }
+        return false;
+    }
 
     public final Command startIntaking() {
         return new FunctionalCommand(
             () -> {m_intakeMotor.set(1.0); System.out.println("Set 1.0");},
             () -> {System.out.println("Intaking...");},
             interrupted -> {m_intakeMotor.set(0.0);},
-            () -> m_tofSensorDebouncer.calculate(isIntakeLoaded()),
+            () -> checkAndStopIntake(),
             this
         );
     }

@@ -43,7 +43,7 @@ public class ElevatorSubsystem extends SubsystemBase {
 
     private double m_elevatorSetpoint = 0.0;
     private final ProfiledPIDController m_elevatorPID = new ProfiledPIDController(
-        0.0, 0.0, 0.0, new TrapezoidProfile.Constraints(Constants.kElevatorMaxVelocity, Constants.kElevatorMaxAcceleration)
+        Constants.kElevatorKp, 0.0, 0.0, new TrapezoidProfile.Constraints(Constants.kElevatorMaxVelocity, Constants.kElevatorMaxAcceleration)
     );
 
     private double m_shooterSetpoint = 0.0;
@@ -112,7 +112,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     }
 
     public final void setElevatorSetpoint(double setpoint) {
-        m_elevatorSetpoint = MathUtil.clamp(setpoint, 0.0, 170);
+        m_elevatorSetpoint = MathUtil.clamp(setpoint, 0.0, kElevatorSetpoints.L4.getAsDouble());
         m_elevatorPID.setGoal(m_elevatorSetpoint);
     }
 
@@ -128,8 +128,20 @@ public class ElevatorSubsystem extends SubsystemBase {
         DataLogHelpers.logDouble(elevatorOutput, "ElevatorSubsystem/Elevator PID Output");
         DataLogHelpers.logDouble(m_elevatorSetpoint, "ElevatorSubsystem/Elevator PID Goal");
         DataLogHelpers.logDouble(0.0, "ElevatorSubsystem/Elevator Height");
+        SmartDashboard.putNumber("Elevator Position", m_elevatorEncoder.getPosition());
+        SmartDashboard.putNumber("Error", m_elevatorPID.getPositionError());
 
-        //m_elevatorMotor.set(elevatorOutput);
+        if ((elevatorOutput < 0.0) && (m_limitHigh.get())) {
+            m_elevatorMotor.set(elevatorOutput);
+        }
+
+        else if ((elevatorOutput > 0.0) && (m_limitLow.get())) {
+            m_elevatorMotor.set(elevatorOutput);
+        }
+
+        else {
+            m_elevatorMotor.set(0.0);
+        }
     }
 
     public final void setShooterSetpoint(double setpoint) {
