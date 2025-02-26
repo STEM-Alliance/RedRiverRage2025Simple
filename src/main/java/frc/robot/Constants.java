@@ -92,12 +92,12 @@ public final class Constants {
     /********************************************
      * Elevator and Shooter
      *******************************************/
-    static public double kElevatorKp = 0.5;
+    static public double kElevatorKp = 0.6;
     static public enum kElevatorSetpoints {
-        L4      (54),
-        L3      (30),
-        L2      (130),
-        L1      (10),
+        L4      (55.5),
+        L3      (31),
+        L2      (17.0),
+        L1      (5),
         IDLE    (0),
         INTAKE  (10);
         
@@ -110,13 +110,14 @@ public final class Constants {
         public double getAsDouble() {return m_elevatorSetpoint;}
     }
 
+    static public double kShooterKp = 10;
     static public enum kShooterSetpoints {
-        L4      (0.25),
-        L3      (0.125),
-        L2      (0.125),
-        L1      (0.125),
+        L4      (0.75),
+        L3      (0.75),
+        L2      (0.75),
+        L1      (0.70),
         INTAKE  (-0.125),
-        IDLE    (-0.25),
+        IDLE    (0.9034),
         SHOOT   (-0.25);
 
         private final double m_shooterSetpoints;
@@ -130,8 +131,8 @@ public final class Constants {
 
     static public double kElevatorMaxVelocity = 10;
     static public double kElevatorMaxAcceleration = kElevatorMaxVelocity/0.3;
-    static public double kShooterMaxVelocity = 1;
-    static public double kShooterMaxAcceleration = 1;
+    static public double kShooterMaxVelocity = 2;
+    static public double kShooterMaxAcceleration = kShooterMaxVelocity/0.15;
 
     static public int kRumbleTimer = 100;
 

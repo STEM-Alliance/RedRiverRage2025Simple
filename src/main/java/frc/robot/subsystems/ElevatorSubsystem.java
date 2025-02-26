@@ -48,7 +48,7 @@ public class ElevatorSubsystem extends SubsystemBase {
 
     private double m_shooterSetpoint = 0.0;
     private final ProfiledPIDController m_shooterPID = new ProfiledPIDController(
-        0.0, 0.0, 0.0, new TrapezoidProfile.Constraints(Constants.kShooterMaxVelocity, Constants.kShooterMaxVelocity)
+        Constants.kShooterKp, 0.0, 0.0, new TrapezoidProfile.Constraints(Constants.kShooterMaxVelocity, Constants.kShooterMaxVelocity)
     );
 
     //private final IntakeSubsystem m_intake = new IntakeSubsystem(11, 0);
@@ -95,6 +95,7 @@ public class ElevatorSubsystem extends SubsystemBase {
         m_shooterMotor.configure(shooterConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
         m_intakePos = m_shooterMotor.getAbsoluteEncoder();
+        setShooterSetpoint(kShooterSetpoints.IDLE.getAsDouble());
     }
 
     public void periodic() {
@@ -155,13 +156,13 @@ public class ElevatorSubsystem extends SubsystemBase {
 
     private final void shooterControlLoop() {
         SmartDashboard.putData("ShooterPID", m_shooterPID);
-        double shooterOutput = MathUtil.clamp(m_shooterPID.calculate(m_intakePos.getPosition()), -0.25, 0.25);
+        double shooterOutput = MathUtil.clamp(-m_shooterPID.calculate(m_intakePos.getPosition()), -0.75, 0.75);
         SmartDashboard.putNumber("ShooterOutput", shooterOutput);
 
         DataLogHelpers.logDouble(shooterOutput, "ElevatorSubsystem/Shooter PID Output");
         DataLogHelpers.logDouble(m_shooterSetpoint, "ElevatorSubsystem/Shooter PID Goal");
 
-        //m_shooterMotor.set(shooterOutput);
+        m_shooterMotor.set(shooterOutput);
     }
 
     public final Command setState(
@@ -175,14 +176,27 @@ public class ElevatorSubsystem extends SubsystemBase {
     }
 
     public final Command setStateIdle() {
-        return new InstantCommand(() -> {
-            setState(kElevatorSetpoints.IDLE, kShooterSetpoints.IDLE);
-        });
+        return setState(kElevatorSetpoints.IDLE, kShooterSetpoints.IDLE);
+    }
+
+    public final Command zeroHeight() {
+        return new FunctionalCommand(
+            () -> {},
+            () -> {m_elevatorMotor.set(0.2); m_elevatorEncoder.setPosition(0.0);},
+            interrupted -> stop(),
+            () -> !m_limitLow.get(),
+            this
+        );
+    }
+
+    public final Command emergencyStop() {
+        return new InstantCommand(() -> m_elevatorMotor.set(0.0), this);
     }
 
     public final Boolean stop()
     {
         m_elevatorMotor.set(0);
+        m_elevatorEncoder.setPosition(0.0);
         return true;
     }
 

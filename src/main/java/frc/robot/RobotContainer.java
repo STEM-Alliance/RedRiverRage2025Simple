@@ -99,14 +99,14 @@ public class RobotContainer {
     m_driverController.y().onTrue(m_drivetrain.resetGyro());
     // m_driverController.y();
 
-    // m_driverController.leftBumper().onTrue(m_climb.toggleClimber());
-    // m_driverController.rightBumper().onTrue(m_climb.toggleClaw());
+    m_driverController.leftBumper().onTrue(m_climb.toggleClimber());
+    m_driverController.rightBumper().onTrue(m_climb.toggleClaw());
 
     // m_driverController.leftTrigger().whileTrue(new ApriltagAlignment(-1, 0.425, -0.15, m_cameras, m_drivetrain, true));
     // m_driverController.rightTrigger().whileTrue(new ApriltagAlignment(-1, 0.425, 0.15, m_cameras, m_drivetrain, true));
 
-    m_driverController.leftBumper().whileTrue(m_elevator.cw());
-    m_driverController.rightBumper().whileTrue(m_elevator.ccw());
+    //m_driverController.leftBumper().whileTrue(m_elevator.cw());
+    //m_driverController.rightBumper().whileTrue(m_elevator.ccw());
     //m_driverController.b().whileTrue(m_elevator.up());
     //m_driverController.a().whileTrue(m_elevator.down());
     m_driverController.povLeft().whileTrue(m_intake.startShooting());
@@ -122,10 +122,34 @@ public class RobotContainer {
     // so this doesn't need to be changed between different drivetrains.
     m_drivetrain.setDefaultCommand(m_drivetrain.getTeleopDriveCommand(m_driverController));
 
-    // m_operatorButtonPanel.button(2).onTrue(m_elevator.setState(
-    //   kElevatorSetpoints.L4,
-    //   kShooterSetpoints.L4
-    // )).onFalse(m_elevator.setStateIdle());
+    m_operatorButtonPanel.button(1).onTrue(m_elevator.setState(
+      kElevatorSetpoints.L1,
+      kShooterSetpoints.L1
+    )).onFalse(m_elevator.setStateIdle());
+
+    m_operatorButtonPanel.button(2).onTrue(m_elevator.setState(
+      kElevatorSetpoints.L2,
+      kShooterSetpoints.L2
+    )).onFalse(m_elevator.setStateIdle());
+
+    m_operatorButtonPanel.button(3).onTrue(m_elevator.setState(
+      kElevatorSetpoints.L3,
+      kShooterSetpoints.L3
+    )).onFalse(m_elevator.setStateIdle());
+
+    m_operatorButtonPanel.button(4).onTrue(m_elevator.setState(
+      kElevatorSetpoints.L4,
+      kShooterSetpoints.L4
+    )).onFalse(m_elevator.setStateIdle());
+
+    m_operatorButtonPanel.button(5).onTrue(m_intake.startIntaking())
+      .onFalse(m_intake.stopIntaking());
+    
+    m_operatorButtonPanel.button(6).onTrue(m_intake.startShooting())
+      .onFalse(m_intake.stopShooting());
+    
+    m_operatorButtonPanel.button(8).whileTrue(m_elevator.zeroHeight())
+      .onFalse(m_elevator.emergencyStop());
 
     // m_operatorButtonPanel.button(4).onTrue(m_elevator.setState(
     //   kElevatorSetpoints.L3,
