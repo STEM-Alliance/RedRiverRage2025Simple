@@ -96,10 +96,10 @@ public final class Constants {
     static public enum kElevatorSetpoints {
         L4      (55.5),
         L3      (31),
-        L2      (17.0),
+        L2      (15.0),
         L1      (5),
         IDLE    (0),
-        INTAKE  (10);
+        INTAKE  (0);
         
         private final double m_elevatorSetpoint;
 
@@ -112,13 +112,13 @@ public final class Constants {
 
     static public double kShooterKp = 10;
     static public enum kShooterSetpoints {
-        L4      (0.75),
-        L3      (0.75),
-        L2      (0.75),
-        L1      (0.70),
-        INTAKE  (-0.125),
-        IDLE    (0.9034),
-        SHOOT   (-0.25);
+        L4      (0.74),
+        L3      (0.72),
+        L2      (0.72),
+        L1      (0.72),
+        INTAKE  (0.72),
+        CLIMB   (0.15),
+        IDLE    (0.9034);
 
         private final double m_shooterSetpoints;
 
@@ -129,13 +129,16 @@ public final class Constants {
         public double getAsDouble() {return m_shooterSetpoints;}
     }
 
-    static public double kElevatorMaxVelocity = 10;
+    static public double kElevatorMaxVelocity = 30;
     static public double kElevatorMaxAcceleration = kElevatorMaxVelocity/0.3;
     static public double kShooterMaxVelocity = 2;
     static public double kShooterMaxAcceleration = kShooterMaxVelocity/0.15;
 
     static public int kRumbleTimer = 100;
 
+    static public double kAlignXDistance = 0.3;
+    static public double kAlignYDistanceLeft = -0.10;
+    static public double kAlignYDistanceRight = 0.13;
     
     /********************************************
      * Motor Current Limits

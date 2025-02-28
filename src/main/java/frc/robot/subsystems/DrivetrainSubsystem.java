@@ -26,10 +26,11 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.utils.ControllerProcessing;
-import frc.robot.utils.DataLogHelpers;
 import frc.robot.Constants;
 import frc.robot.misc.SwerveModule;
+import frc.robot.util.ControllerProcessing;
+import frc.robot.util.DataLogHelpers;
+
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Volts;
