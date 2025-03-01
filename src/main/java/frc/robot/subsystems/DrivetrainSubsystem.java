@@ -26,10 +26,11 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.utils.ControllerProcessing;
-import frc.robot.utils.DataLogHelpers;
 import frc.robot.Constants;
 import frc.robot.misc.SwerveModule;
+import frc.robot.util.ControllerProcessing;
+import frc.robot.util.DataLogHelpers;
+
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Volts;
@@ -75,6 +76,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
       
   private final SwerveModule m_modules[] = {m_frontLeft, m_frontRight, m_backLeft, m_backRight};
   private final Pigeon2 m_pigeon2 = new Pigeon2(Constants.kPigeon2CanID);
+  private boolean m_climbSpeed = false;
 
   // Creating my kinematics object using the module locations
   SwerveDriveKinematics m_kinematics = new SwerveDriveKinematics(
@@ -220,9 +222,9 @@ public class DrivetrainSubsystem extends SubsystemBase {
         double processedOmega = ControllerProcessing.getProcessedOmega(driverController.getRightX());
 
         controllerDrive(
-          processedXY[0] * kMaxSpeed,
-          processedXY[1] * kMaxSpeed,
-          processedOmega * kMaxAngularSpeed,
+          processedXY[0] * (m_climbSpeed ? kMaxSpeed / 4.0 : kMaxSpeed),
+          processedXY[1] * (m_climbSpeed ? kMaxSpeed / 4.0 : kMaxSpeed),
+          processedOmega * (m_climbSpeed ? kMaxAngularSpeed / 4.0 : kMaxAngularSpeed),
           true,
           0.02
         );
@@ -353,7 +355,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
 
   public void resetPose(Pose2d resetPose) {
     System.out.println("Reset pose to " + resetPose);
-    m_poseEstimator.resetPosition(m_pigeon2.getRotation2d(), getModulePositions(), resetPose);
+    //m_poseEstimator.resetPosition(m_pigeon2.getRotation2d(), getModulePositions(), resetPose);
   }
 
   public void setGyro(double robotHeading) {
@@ -388,6 +390,18 @@ public class DrivetrainSubsystem extends SubsystemBase {
 
   public Command disableTurbo() {
       return new InstantCommand(() -> m_turbo = false);
+  }
+
+  public final Command toggleClimbSpeed() {
+    return new InstantCommand(() -> {
+      m_climbSpeed = !m_climbSpeed;
+    });
+  }
+
+  public final Command setYawToPose() {
+    return new InstantCommand(() -> {
+      m_pigeon2.setYaw(m_field.getRobotPose().getRotation().getDegrees());
+    });
   }
 
   public void setGains(double kp, double ki, double kd, double ks, double kv) {

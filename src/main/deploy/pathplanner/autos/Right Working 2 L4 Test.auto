@@ -1,0 +1,136 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Drive Out RT"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "AlignRightOffset"
+          }
+        },
+        {
+          "type": "race",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "DriveForwardMeters"
+                }
+              },
+              {
+                "type": "wait",
+                "data": {
+                  "waitTime": 0.5
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "SetState L4"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Shoot 3 Sec"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "SetState IDLE"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "RT Reef To Pickup"
+          }
+        },
+        {
+          "type": "race",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "SetState INTAKE"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Stop"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Pickup to RB Reef"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "AlignRightOffset"
+          }
+        },
+        {
+          "type": "race",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "DriveForwardMeters"
+                }
+              },
+              {
+                "type": "wait",
+                "data": {
+                  "waitTime": 0.5
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "SetState L4"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Shoot 3 Sec"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "SetState IDLE"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": null,
+  "choreoAuto": false
+}

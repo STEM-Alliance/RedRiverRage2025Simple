@@ -98,6 +98,10 @@ public class VisionSubsystem extends SubsystemBase {
         }
     }
 
+    public PhotonCamera getCamera() {
+        return camera;
+    }
+
     @Override
     public void periodic() {
         Optional<EstimatedRobotPose> estimatedPose = getEstimatedGlobalPose();

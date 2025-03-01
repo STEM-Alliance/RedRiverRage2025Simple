@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.DrivetrainSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
+import frc.robot.util.DataLogHelpers;
 
 /** An example command that uses an example subsystem. */
 public class ApriltagAlignment extends Command {
@@ -21,7 +22,7 @@ public class ApriltagAlignment extends Command {
 
     private final PIDController m_yPID = new PIDController(3.5, 0.0, 0.0);
 
-    private final PIDController m_rotPID = new PIDController(2.0, 0.2, 0.0);
+    private final PIDController m_rotPID = new PIDController(2.25, 0.2, 0.0);
 
     private int m_counter = 0;
     private int m_apriltag;
@@ -46,7 +47,7 @@ public class ApriltagAlignment extends Command {
         m_rotPID.setSetpoint(Math.PI);
         m_xPID.setTolerance(0.05);
         m_yPID.setTolerance(0.05);
-        m_rotPID.setTolerance(0.05);
+        m_rotPID.setTolerance(0.025);
 
         // Integral is only used within +- 12.5 degrees of the target, with -0.1 to 0.1 max influence.
         m_rotPID.setIZone(12.5);
@@ -65,6 +66,8 @@ public class ApriltagAlignment extends Command {
     @Override
     public void initialize() {
         m_apriltag = -1;
+        m_photonVision.getCamera().takeOutputSnapshot();
+        SmartDashboard.putBoolean("FinishedAligning", false);
     }
 
     public final ChassisSpeeds m_desiredChassisSpeeds = new ChassisSpeeds();
@@ -72,6 +75,7 @@ public class ApriltagAlignment extends Command {
     // Called every time the scheduler runs while the command is scheduled.
     @Override
     public void execute() {
+        DataLogHelpers.logDouble(1.0, "AlignmentStatus");
         System.out.println("+ApriltagAlignment.execute");
         var target = m_photonVision.getTargetClosestToCenter();
 
@@ -102,7 +106,10 @@ public class ApriltagAlignment extends Command {
 
     // Called once the command ends or is interrupted.
     @Override
-    public void end(boolean interrupted) {m_apriltag = -1;}
+    public void end(boolean interrupted) {
+        m_apriltag = -1;
+        m_photonVision.getCamera().takeOutputSnapshot();
+    }
 
     // Returns true when the command should end.
     @Override
