@@ -7,6 +7,7 @@ package frc.robot;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 
 import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DataLogManager;
@@ -14,6 +15,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.util.Elastic;
 
 /**
  * The methods in this class are called automatically corresponding to each mode, as described in
@@ -56,7 +58,9 @@ public class Robot extends TimedRobot {
 
   /** This function is called once each time the robot enters Disabled mode. */
   @Override
-  public void disabledInit() {}
+  public void disabledInit() {
+    Elastic.selectTab("Autonomous");
+  }
 
   @Override
   public void disabledPeriodic() {
@@ -89,8 +93,11 @@ public class Robot extends TimedRobot {
       m_autonomousCommand.cancel();
     }
 
+    m_robotContainer.getDrivetrain().setYawToPose();
+
     // This logs the controller inputs so they can be reviewed for debugging.
     DriverStation.startDataLog(DataLogManager.getLog());
+    Elastic.selectTab("Teleoperated");
   }
 
   /** This function is called periodically during operator control. */

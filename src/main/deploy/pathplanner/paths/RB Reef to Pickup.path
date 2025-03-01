@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.709598875036706,
-        "y": 2.6680533103617745
+        "x": 3.36375,
+        "y": 2.2504999999999997
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.9617975336095848,
-        "y": 1.9975099666151706
+        "x": 2.615948658572879,
+        "y": 1.5799566562533958
       },
       "isLocked": false,
       "linkedName": "RB Reef"
     },
     {
       "anchor": {
-        "x": 1.6064644670904542,
-        "y": 0.6972565026558004
+        "x": 1.755,
+        "y": 0.8464999999999986
       },
       "prevControl": {
-        "x": 2.2959704956860056,
-        "y": 1.2957698906270232
+        "x": 2.4445060285955513,
+        "y": 1.4450133879712213
       },
       "nextControl": null,
       "isLocked": false,
@@ -34,7 +34,7 @@
   "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 2.5,
-    "maxAcceleration": 8.9,
+    "maxAcceleration": 3.0,
     "maxAngularVelocity": 630.0,
     "maxAngularAcceleration": 2314.0,
     "nominalVoltage": 12.0,

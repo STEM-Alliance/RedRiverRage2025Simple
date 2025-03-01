@@ -12,9 +12,11 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants;
 
@@ -61,7 +63,8 @@ public class IntakeSubsystem extends SubsystemBase {
 
     public final boolean checkAndStopIntake()
     {
-        if (m_tofSensorDebouncer.calculate(isIntakeLoaded()))
+        //if (m_tofSensorDebouncer.calculate(isIntakeLoaded()))
+        if (isIntakeLoaded())
         {
             m_intakeMotor.set(0);
             return true;
@@ -76,6 +79,11 @@ public class IntakeSubsystem extends SubsystemBase {
             interrupted -> {m_intakeMotor.set(0.0);},
             () -> checkAndStopIntake(),
             this
+        ).andThen(Commands.deadline(
+            new WaitCommand(0.175),
+            new InstantCommand(() -> m_intakeMotor.set(-1.0))
+        )).andThen(
+            new InstantCommand(() -> m_intakeMotor.set(0.0))
         );
     }
 
@@ -100,6 +108,16 @@ public class IntakeSubsystem extends SubsystemBase {
         );
     }
 
+    // public final Command autonomousShoot() {
+    //     return new FunctionalCommand(
+    //         () -> m_intakeMotor.set(1.0),
+    //         () -> {},
+    //         interrupted -> {},
+    //         () -> isIntakeNotLoaded(),
+    //         this
+    //     ).until
+    // }
+
     public final boolean isIntakeLoaded() {
         if (m_tofSensor.is_within_threshold(75))
         {
@@ -110,5 +128,9 @@ public class IntakeSubsystem extends SubsystemBase {
             m_coralDetected = false;
         }
         return m_coralDetected;
+    }
+
+    public final boolean isIntakeNotLoaded() {
+        return !isIntakeLoaded();
     }
 }

@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 5.8305,
-        "y": 2.2602499999999988
+        "x": 5.274590163934427,
+        "y": 5.4395491803278695
       },
       "prevControl": null,
       "nextControl": {
-        "x": 4.951054738313732,
-        "y": 1.9414064604982295
+        "x": 4.229171131855594,
+        "y": 6.044974102519235
       },
       "isLocked": false,
-      "linkedName": "Drive Out RT End"
+      "linkedName": null
     },
     {
       "anchor": {
-        "x": 1.755,
-        "y": 0.8464999999999986
+        "x": 1.7382172131147542,
+        "y": 7.4295081967213115
       },
       "prevControl": {
-        "x": 2.53838788669592,
-        "y": 1.1138088734480176
+        "x": 2.7571189946652623,
+        "y": 6.873176978333459
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Reef Right"
+      "linkedName": null
     }
   ],
   "rotationTargets": [],
@@ -42,13 +42,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 54.0
+    "rotation": 129.52263127117115
   },
   "reversed": false,
   "folder": "Right 3 L4 Auto",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 123.95905981967628
+    "rotation": -122.87626175221057
   },
   "useDefaultConstraints": true
 }

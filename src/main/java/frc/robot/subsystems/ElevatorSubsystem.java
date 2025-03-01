@@ -26,12 +26,13 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants;
 import frc.robot.Constants.kElevatorSetpoints;
 import frc.robot.Constants.kShooterSetpoints;
-import frc.robot.utils.DataLogHelpers;
+import frc.robot.util.DataLogHelpers;
 
 public class ElevatorSubsystem extends SubsystemBase {
     private final SparkMax m_elevatorMotor;
@@ -96,12 +97,14 @@ public class ElevatorSubsystem extends SubsystemBase {
 
         m_intakePos = m_shooterMotor.getAbsoluteEncoder();
         setShooterSetpoint(kShooterSetpoints.IDLE.getAsDouble());
+
+        m_elevatorPID.setTolerance(0.5);
+        m_shooterPID.setTolerance(0.025);
+        m_shooterPID.enableContinuousInput(0.0, 1.0);
+        setDefaultCommand(getControlLoopCommand());
     }
 
     public void periodic() {
-        elevatorControlLoop();
-        shooterControlLoop();
-
         DataLogHelpers.logDouble(m_elevatorMotor.getOutputCurrent(), "ElevatorSubsystem/Elevator Current");
         DataLogHelpers.logDouble(m_elevatorMotor.getMotorTemperature(), "ElevatorSubsystem/Elevator Temperature");
         DataLogHelpers.logDouble(m_shooterMotor.getOutputCurrent(), "ElevatorSubsystem/Shooter Current");
@@ -110,6 +113,13 @@ public class ElevatorSubsystem extends SubsystemBase {
         SmartDashboard.putBoolean("LimitLow", m_limitLow.get());
         SmartDashboard.putBoolean("LimitHigh", m_limitHigh.get());
         SmartDashboard.putNumber("IntakePos", m_intakePos.getPosition());
+    }
+
+    public final Command getControlLoopCommand() {
+        return new RunCommand(
+            () -> {elevatorControlLoop(); shooterControlLoop();},
+            this
+        );
     }
 
     public final void setElevatorSetpoint(double setpoint) {
@@ -123,7 +133,7 @@ public class ElevatorSubsystem extends SubsystemBase {
 
     private final void elevatorControlLoop() {
         SmartDashboard.putData("ElevatorPID", m_elevatorPID);
-        double elevatorOutput = MathUtil.clamp(-m_elevatorPID.calculate(-m_elevatorEncoder.getPosition()), -0.5, 0.5);
+        double elevatorOutput = MathUtil.clamp(-m_elevatorPID.calculate(-m_elevatorEncoder.getPosition()), -1, 1);
         SmartDashboard.putNumber("elevatorOutput", elevatorOutput);
 
         DataLogHelpers.logDouble(elevatorOutput, "ElevatorSubsystem/Elevator PID Output");
@@ -232,6 +242,22 @@ public class ElevatorSubsystem extends SubsystemBase {
                                      ()->{m_shooterMotor.set(0.5);},
                                      interrupted -> stopRotate(),
                                      ()->false);
+    }
+
+    public final Command atSetpoints() {
+        return new FunctionalCommand(
+            () -> {},
+            () -> {},
+            interrupted -> {},
+            () -> (m_elevatorPID.atGoal() && m_shooterPID.atGoal())
+        );
+    }
+
+    public final Command interruptControl() {
+        return new RunCommand(
+            () -> {m_elevatorMotor.set(0.0);},
+            this
+        );
     }
 
     // public final Command startIntaking() {

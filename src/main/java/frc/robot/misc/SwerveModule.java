@@ -7,7 +7,6 @@ package frc.robot.misc;
 import static edu.wpi.first.units.Units.*;
 import static frc.robot.Constants.*;
 
-import frc.robot.utils.DataLogHelpers;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
@@ -17,11 +16,13 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.util.DataLogHelpers;
 
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 
 public class SwerveModule {
   private static final double kModuleMaxAngularVelocity = kMaxAngularSpeed;
@@ -196,12 +197,11 @@ public class SwerveModule {
 
   public void setBrake(boolean enabled) {
     if (enabled) {
-      // TODO: Fixme
-      //m_driveMotor.setIdleMode(IdleMode.kBrake);
+      m_driveMotor.setNeutralMode(NeutralModeValue.Brake);
     }
+
     else {
-      // TODO: Fixme
-      //m_driveMotor.setIdleMode(IdleMode.kCoast);
+      m_driveMotor.setNeutralMode(NeutralModeValue.Coast);
     }
   }
 }
