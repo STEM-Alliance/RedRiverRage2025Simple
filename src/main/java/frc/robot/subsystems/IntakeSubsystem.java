@@ -87,6 +87,15 @@ public class IntakeSubsystem extends SubsystemBase {
         );
     }
 
+    public final Command runIntake() {
+        return new FunctionalCommand(
+            () -> {m_intakeMotor.set(1.0);},
+            () -> {},
+            interrupted -> {m_intakeMotor.set(0.0);},
+            () -> false
+        );
+    }
+
     public final Command stopIntaking() {
         return new InstantCommand(
             () -> {m_intakeMotor.set(0.0); System.out.println("Set 0.0");},

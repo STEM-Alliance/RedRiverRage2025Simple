@@ -79,13 +79,19 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "SetState INTAKE"
+                  "name": "Intake"
                 }
               },
               {
                 "type": "named",
                 "data": {
                   "name": "Stop"
+                }
+              },
+              {
+                "type": "wait",
+                "data": {
+                  "waitTime": 0.5
                 }
               }
             ]
