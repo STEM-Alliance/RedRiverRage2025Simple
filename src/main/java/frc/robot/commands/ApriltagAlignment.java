@@ -27,6 +27,8 @@ public class ApriltagAlignment extends Command {
     private int m_counter = 0;
     private int m_apriltag;
     private boolean m_output;
+    private boolean m_activeX;
+    private boolean m_activeY;
 
     public ApriltagAlignment(
         int apriltag,
@@ -42,6 +44,16 @@ public class ApriltagAlignment extends Command {
 
         m_drivetrain = drivetrain;
 
+        if (xOffset < 0)
+            m_activeX = false;
+        else
+            m_activeX = true;
+
+        if (yOffset < 0)
+            m_activeY = false;
+        else
+            m_activeY = true;
+
         m_xPID.setSetpoint(xOffset);
         m_yPID.setSetpoint(yOffset);
         m_rotPID.setSetpoint(Math.PI);
@@ -56,6 +68,10 @@ public class ApriltagAlignment extends Command {
         if (output) addRequirements(drivetrain);
 
         System.out.println("+ApriltagAlignment command");
+
+        SmartDashboard.putData("AT_x_pid", m_xPID);
+        SmartDashboard.putData("AT_y_pid", m_yPID);
+        SmartDashboard.putData("AT_rot_pid", m_rotPID);
     }
 
     public final void disableOutput() {
@@ -82,25 +98,39 @@ public class ApriltagAlignment extends Command {
         // TODO: If the target is lost, the robot will keep rotating.
         // Also, if moving too fast then it can reach the setpoint and then overshoot.
         if (target != null) {
+            SmartDashboard.putNumber("AT_alignment_tag_id", target.fiducialId);
+            SmartDashboard.putNumber("AT_alignment_tag_x", target.bestCameraToTarget.getX());
+            SmartDashboard.putNumber("AT_alignment_tag_y", target.bestCameraToTarget.getY());
+            SmartDashboard.putNumber("AT_alignment_tag_rot", target.bestCameraToTarget.getRotation().getAngle());
+            SmartDashboard.putBoolean("AT_alignment_tag_AtX", m_yPID.atSetpoint());
+            SmartDashboard.putBoolean("AT_alignment_tag_AtY", m_yPID.atSetpoint());
+            SmartDashboard.putBoolean("AT_alignment_tag_AtRot", m_rotPID.atSetpoint());
+
             m_apriltag = target.fiducialId;
             var x_offset = target.bestCameraToTarget.getMeasureX().baseUnitMagnitude();
             var y_offset = target.bestCameraToTarget.getMeasureY().baseUnitMagnitude();
             var rot = target.bestCameraToTarget.getRotation().getAngle();
-            m_desiredChassisSpeeds.vxMetersPerSecond = MathUtil.clamp(-m_xPID.calculate(x_offset), -kMaxAlignmentSpeed, kMaxAlignmentSpeed);
-            m_desiredChassisSpeeds.vyMetersPerSecond = MathUtil.clamp(-m_yPID.calculate(y_offset), -kMaxAlignmentSpeed, kMaxAlignmentSpeed);
+            if (m_activeX)
+                m_desiredChassisSpeeds.vxMetersPerSecond = MathUtil.clamp(-m_xPID.calculate(x_offset), -kMaxAlignmentSpeed, kMaxAlignmentSpeed);
+            else
+                m_desiredChassisSpeeds.vxMetersPerSecond = 0;
+            if (m_activeY)
+                m_desiredChassisSpeeds.vyMetersPerSecond = MathUtil.clamp(-m_yPID.calculate(y_offset), -kMaxAlignmentSpeed, kMaxAlignmentSpeed);
+            else
+                m_desiredChassisSpeeds.vyMetersPerSecond = 0;
+
             m_desiredChassisSpeeds.omegaRadiansPerSecond = MathUtil.clamp(m_rotPID.calculate(rot), -kMaxAlignmentAngularSpeed, kMaxAlignmentAngularSpeed);
 
             if (m_output) m_drivetrain.driveRobotSpeeds(m_desiredChassisSpeeds);
 
-            SmartDashboard.putNumber("XError", m_xPID.getError());
-            SmartDashboard.putNumber("YError", m_yPID.getError());
-            SmartDashboard.putNumber("RotError", m_rotPID.getError());
-            SmartDashboard.putNumber("DesiredVx", m_desiredChassisSpeeds.vxMetersPerSecond);
-            SmartDashboard.putNumber("DesiredVy", m_desiredChassisSpeeds.vyMetersPerSecond);
-            SmartDashboard.putNumber("DesiredRot", m_desiredChassisSpeeds.omegaRadiansPerSecond);
-            
+            SmartDashboard.putNumber("AT_XError", m_xPID.getError());
+            SmartDashboard.putNumber("AT_YError", m_yPID.getError());
+            SmartDashboard.putNumber("AT_RotError", m_rotPID.getError());
+            SmartDashboard.putNumber("AT_DesiredVx", m_desiredChassisSpeeds.vxMetersPerSecond);
+            SmartDashboard.putNumber("AT_DesiredVy", m_desiredChassisSpeeds.vyMetersPerSecond);
+            SmartDashboard.putNumber("AT_DesiredRot", m_desiredChassisSpeeds.omegaRadiansPerSecond);
+            SmartDashboard.putNumber("AT_counter", m_counter);
             m_counter++;
-            System.out.println(m_counter + "=> " + x_offset + " " + y_offset + " " + rot);
         }
     }
 
@@ -114,7 +144,7 @@ public class ApriltagAlignment extends Command {
     // Returns true when the command should end.
     @Override
     public boolean isFinished() {
-        if (m_xPID.atSetpoint() && m_yPID.atSetpoint() && m_rotPID.atSetpoint() && m_apriltag > 0)
+        if ((!m_activeX || m_xPID.atSetpoint()) && (!m_activeY || m_yPID.atSetpoint()) && m_rotPID.atSetpoint() && m_apriltag > 0)
         {
             System.out.println("ApriltagAlignment isFinished");
             return true;

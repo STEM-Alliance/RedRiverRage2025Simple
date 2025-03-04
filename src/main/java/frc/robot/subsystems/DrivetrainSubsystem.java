@@ -271,6 +271,13 @@ public class DrivetrainSubsystem extends SubsystemBase {
     driveRobotSpeeds(relativeSpeeds);
   }
 
+  public Command driveStraight(double velocity, boolean fieldRelative) {
+    return new FunctionalCommand(() -> {}, 
+                                 () -> {controllerDrive(velocity, 0, 0, fieldRelative, 0.02);}, 
+                                 interrupted -> controllerDrive(velocity, 0, 0, fieldRelative, 0.02),
+                                 () -> false, this);
+  }
+
   public ChassisSpeeds pathplannerSpeeds = new ChassisSpeeds();
 
   public void driveRobotSpeeds(ChassisSpeeds robotSpeeds) {

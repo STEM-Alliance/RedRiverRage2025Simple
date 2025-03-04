@@ -95,8 +95,8 @@ public class RobotContainer {
   }
 
   private final void configureControllers() {
-    // m_driverController.a();
-    // m_driverController.b();
+    m_driverController.a().whileTrue(m_drivetrain.driveStraight(1, false));
+    m_driverController.b().whileTrue(m_drivetrain.driveStraight(1.0, true));
     m_driverController.x().onTrue(m_drivetrain.resetGyro());
     // m_driverController.y();
 
@@ -106,8 +106,16 @@ public class RobotContainer {
 
     m_driverController.rightBumper().onTrue(m_climb.toggleClaw());
 
-    m_driverController.leftTrigger().whileTrue(new ApriltagAlignment(9, Constants.kAlignXDistance, Constants.kAlignYDistanceLeft, m_cameras, m_drivetrain, true).andThen(new DriveForwardMeters(1.45, m_drivetrain)));
-    m_driverController.rightTrigger().whileTrue(new ApriltagAlignment(9, Constants.kAlignXDistance, Constants.kAlignYDistanceRight, m_cameras, m_drivetrain, true).andThen(new DriveForwardMeters(1.45, m_drivetrain)));
+    m_driverController.leftTrigger()
+      .whileTrue(new ApriltagAlignment(-1, -1, Constants.kAlignYDistanceLeft, m_cameras, m_drivetrain, true)
+      .andThen(new ApriltagAlignment(-1, Constants.kAlignXDistance, -1, m_cameras, m_drivetrain, true)
+      .andThen(new DriveForwardMeters(1.45, m_drivetrain))));
+    m_driverController.rightTrigger()
+      .whileTrue(new ApriltagAlignment(-1, -1, Constants.kAlignYDistanceRight, m_cameras, m_drivetrain, true)
+      .andThen(new ApriltagAlignment(-1, Constants.kAlignXDistance, -1, m_cameras, m_drivetrain, true)
+      .andThen(new DriveForwardMeters(1.45, m_drivetrain))));
+    // m_driverController.leftTrigger().whileTrue(new ApriltagAlignment(-1, Constants.kAlignXDistance, Constants.kAlignYDistanceLeft, m_cameras, m_drivetrain, true).andThen(new DriveForwardMeters(1.45, m_drivetrain)));
+    // m_driverController.rightTrigger().whileTrue(new ApriltagAlignment(-1, Constants.kAlignXDistance, Constants.kAlignYDistanceRight, m_cameras, m_drivetrain, true).andThen(new DriveForwardMeters(1.45, m_drivetrain)));
 
     //m_driverController.leftBumper().whileTrue(m_elevator.cw());
     //m_driverController.rightBumper().whileTrue(m_elevator.ccw());
