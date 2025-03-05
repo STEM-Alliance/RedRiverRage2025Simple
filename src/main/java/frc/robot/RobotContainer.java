@@ -98,7 +98,7 @@ public class RobotContainer {
     m_driverController.a().whileTrue(m_drivetrain.driveStraight(1, false));
     m_driverController.b().whileTrue(m_drivetrain.driveStraight(1.0, true));
     m_driverController.x().onTrue(m_drivetrain.resetGyro());
-    // m_driverController.y();
+    m_driverController.y().onTrue(m_drivetrain.calculateWheelDiameters(m_driverController, m_driverController.povUp()));
 
     m_driverController.leftBumper().onTrue(m_climb.toggleClimber().alongWith(m_elevator.setState(kElevatorSetpoints.IDLE, kShooterSetpoints.CLIMB)).alongWith(m_drivetrain.toggleClimbSpeed()).alongWith(new InstantCommand(() -> {
       Elastic.selectTab("Climb");
