@@ -4,6 +4,9 @@
 
 package frc.robot;
 
+import com.pathplanner.lib.config.PIDConstants;
+import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+
 import edu.wpi.first.math.geometry.Translation2d;
 
 /**
@@ -36,9 +39,9 @@ public final class Constants {
 
     // Max speeds
     static public double kMaxSpeed = 5.1; // 5.1 meters per second
-    static public double kMaxAutonomousSpeed = 2.5; // this ensures that the max speed
+    static public double kMaxAutonomousSpeed = 3; // this ensures that the max speed 2.5
     // (configured in pathplanne app settings) is never exceeded, should match the pathplanner max.
-    static public double kMaxAngularSpeed = 3.5 * Math.PI; // 2 rotations per second 
+    static public double kMaxAngularSpeed = 4.0 * Math.PI; // 2 rotations per second 3.5
     static public double kMaxAutonomousAngularSpeed = kMaxAngularSpeed;
     static public double kMaxAngularAcceleration = Math.pow(2.0 * Math.PI, 2);
     static public double GeneralDeadband = 0.2;
@@ -62,6 +65,11 @@ public final class Constants {
     static public double kSwerveKs = 0.02;
     static public double kSwerveKv = 0.005;
     static public double kSwerveKa = 0.0;
+
+    public static final PPHolonomicDriveController kPathplannerDriveController = new PPHolonomicDriveController(
+        new PIDConstants(3.5, 0.0, 0.0), // Translation PID constants
+        new PIDConstants(2.25, 0.0, 0.0) // Rotation PID constants
+    );
 
     // Swerve Hardware
     static public double kWheelRadius = 0.04826;
@@ -112,14 +120,14 @@ public final class Constants {
 
     static public double kShooterKp = 10;
     static public enum kShooterSetpoints {
-        L4      (0.74),
-        L3      (0.72),
-        L2      (0.72),
-        L1      (0.72),
-        INTAKE  (0.72),
-        CLIMB   (0.15),
-        INTAKE2 (0.08),
-        IDLE    (0.9034);
+        L4      (0.74 - 0.1534),
+        L3      (0.72 - 0.1534),
+        L2      (0.72 - 0.1534),
+        L1      (0.72 - 0.1534),
+        INTAKE  (0.72 - 0.1534),
+        CLIMB   (0.15 - 0.1534),
+        INTAKE2 (0.08 - 0.1534),
+        IDLE    (0.9034 - 0.1534); 
 
         private final double m_shooterSetpoints;
 

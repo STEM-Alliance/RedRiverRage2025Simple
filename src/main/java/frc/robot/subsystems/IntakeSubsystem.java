@@ -1,16 +1,13 @@
 package frc.robot.subsystems;
 
-import java.time.Period;
+import static edu.wpi.first.units.Units.Amps;
 
-import com.revrobotics.spark.SparkMax;
-import com.revrobotics.spark.SparkBase.PersistMode;
-import com.revrobotics.spark.SparkBase.ResetMode;
-import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
-import com.revrobotics.spark.config.SparkMaxConfig;
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
+import com.ctre.phoenix6.hardware.TalonFXS;
 
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
@@ -21,27 +18,30 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants;
 
 public class IntakeSubsystem extends SubsystemBase {
-    private final SparkMax m_intakeMotor;
-    private final TofDistanceSubsystem m_tofSensor;
+    private final TalonFXS m_intakeMotor;
+    private final TofDistanceSubsystem m_enterSensor;
+    private final TofDistanceSubsystem m_exitSensor;
     private boolean m_previousCoralDetected = false;
     private boolean m_coralDetected = false;
     private int m_rumbleCounter = 0;
     private final CommandXboxController m_controller;
 
-    private final Debouncer m_tofSensorDebouncer = new Debouncer(0.02 * 3);
-
-    public IntakeSubsystem(int intakeMotorID, int tofSensorID, CommandXboxController controller) {
-        m_intakeMotor = new SparkMax(intakeMotorID, MotorType.kBrushless);
-        m_tofSensor = new TofDistanceSubsystem(tofSensorID);
+    public IntakeSubsystem(int intakeMotorID, int enterSensorID, int exitSensorID, CommandXboxController controller) {
+        m_intakeMotor = new TalonFXS(intakeMotorID);
+        m_enterSensor = new TofDistanceSubsystem(enterSensorID);
+        m_exitSensor = new TofDistanceSubsystem(exitSensorID);
         m_controller = controller;
 
-        SparkMaxConfig intakeConfig = new SparkMaxConfig();
+        CurrentLimitsConfigs currentLimits = new CurrentLimitsConfigs();
 
-        intakeConfig
-            .idleMode(IdleMode.kCoast)
-            .smartCurrentLimit(Constants.Neo550Limit);
+        currentLimits
+            .withStatorCurrentLimitEnable(true)
+            .withSupplyCurrentLimitEnable(true)
+            .withStatorCurrentLimit(Amps.of(20.0))
+            .withSupplyCurrentLimit(Amps.of(20.0))
+            .withSupplyCurrentLowerLimit(Amps.of(20.0));
 
-        m_intakeMotor.configure(intakeConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        m_intakeMotor.getConfigurator().apply(currentLimits);
     }
 
     public void periodic() {
@@ -59,6 +59,9 @@ public class IntakeSubsystem extends SubsystemBase {
         {
             m_controller.getHID().setRumble(RumbleType.kBothRumble, 0);
         }
+
+        SmartDashboard.putNumber("EnterDistance", m_enterSensor.get_distance());
+        SmartDashboard.putNumber("ExitDistance", m_exitSensor.get_distance());
     }
 
     public final boolean checkAndStopIntake()
@@ -74,22 +77,17 @@ public class IntakeSubsystem extends SubsystemBase {
 
     public final Command startIntaking() {
         return new FunctionalCommand(
-            () -> {m_intakeMotor.set(1.0); System.out.println("Set 1.0");},
+            () -> {m_intakeMotor.set(0.2); System.out.println("Set 1.0");},
             () -> {System.out.println("Intaking...");},
             interrupted -> {m_intakeMotor.set(0.0);},
             () -> checkAndStopIntake(),
             this
-        ).andThen(Commands.deadline(
-            new WaitCommand(0.175),
-            new InstantCommand(() -> m_intakeMotor.set(-1.0))
-        )).andThen(
-            new InstantCommand(() -> m_intakeMotor.set(0.0))
         );
     }
 
     public final Command runIntake() {
         return new FunctionalCommand(
-            () -> {m_intakeMotor.set(1.0);},
+            () -> {m_intakeMotor.set(0.2);},
             () -> {},
             interrupted -> {m_intakeMotor.set(0.0);},
             () -> false
@@ -128,7 +126,7 @@ public class IntakeSubsystem extends SubsystemBase {
     // }
 
     public final boolean isIntakeLoaded() {
-        if (m_tofSensor.is_within_threshold(75))
+        if (m_enterSensor.is_within_threshold(75))
         {
             m_coralDetected = true;
         }

@@ -63,7 +63,7 @@ public class RobotContainer {
   private final DrivetrainSubsystem m_drivetrain = new DrivetrainSubsystem(m_field);
 
   private final ClimbSubsystem m_climb = new ClimbSubsystem(15, 14, 13, 12);
-  private final IntakeSubsystem m_intake = new IntakeSubsystem(11, 0, m_driverController);
+  private final IntakeSubsystem m_intake = new IntakeSubsystem(16, 0, 1, m_driverController);
 
   private final VisionSubsystem[] m_cameras = new VisionSubsystem[]{
     new VisionSubsystem(

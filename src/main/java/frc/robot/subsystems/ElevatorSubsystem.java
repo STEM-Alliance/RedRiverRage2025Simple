@@ -50,7 +50,7 @@ public class ElevatorSubsystem extends SubsystemBase {
         m_elevatorEncoder = m_elevatorMotor.getEncoder();
         m_elevatorEncoder.setPosition(0.0);
 
-        m_shooterMotor = new SparkMax(shooterMotorID, MotorType.kBrushed);
+        m_shooterMotor = new SparkMax(shooterMotorID, MotorType.kBrushless);
         m_shooterMotor.getEncoder().setPosition(0.0);
 
         m_elevatorPID.setIZone(0.0);
@@ -69,8 +69,8 @@ public class ElevatorSubsystem extends SubsystemBase {
         elevatorConfig.encoder
             // Magic numbers found through trial and error; ask Joe why our CAD isnt accurate.
             // (output is in inches, inches per second(?))
-            .positionConversionFactor((1.5 / 0.54969295458888695567845703186279 * Math.PI) / 25.0)
-            .velocityConversionFactor((1.5 / 0.54969295458888695567845703186279 * Math.PI) / 25.0 / 60.0);
+            .positionConversionFactor((1.5 / 0.54969295458888695567845703186279 * Math.PI * (25.0 / 12.0)) / 25.0)
+            .velocityConversionFactor((1.5 / 0.54969295458888695567845703186279 * Math.PI * (25.0 / 12.0)) / 25.0 / 60.0);
         
         shooterConfig
             .idleMode(IdleMode.kBrake)
@@ -156,7 +156,7 @@ public class ElevatorSubsystem extends SubsystemBase {
 
     private final void shooterControlLoop() {
         SmartDashboard.putData("ShooterPID", m_shooterPID);
-        double shooterOutput = MathUtil.clamp(-m_shooterPID.calculate(m_intakePos.getPosition()), -0.75, 0.75);
+        double shooterOutput = MathUtil.clamp(-m_shooterPID.calculate(m_intakePos.getPosition()), -0.25, 0.25);
         SmartDashboard.putNumber("ShooterOutput", shooterOutput);
 
         DataLogHelpers.logDouble(shooterOutput, "ElevatorSubsystem/Shooter PID Output");

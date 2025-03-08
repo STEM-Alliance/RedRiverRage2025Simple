@@ -158,11 +158,11 @@ public class VisionSubsystem extends SubsystemBase {
             Optional<EstimatedRobotPose> estimatedPose, List<PhotonTrackedTarget> targets) {
         if (estimatedPose.isEmpty()) {
             // No pose input. Default to single-tag std devs
-            curStdDevs = VecBuilder.fill(4, 4, 8);
+            curStdDevs = VecBuilder.fill(6, 6, 12); // default 4, 4, 8
 
         } else {
             // Pose present. Start running Heuristic
-            var estStdDevs = VecBuilder.fill(4, 4, 8);
+            var estStdDevs = VecBuilder.fill(6, 6, 12);
             int numTags = 0;
             double avgDist = 0;
 
@@ -181,7 +181,7 @@ public class VisionSubsystem extends SubsystemBase {
 
             if (numTags == 0) {
                 // No tags visible. Default to single-tag std devs
-                curStdDevs = VecBuilder.fill(4, 4, 8); // single standard devs
+                curStdDevs = VecBuilder.fill(6, 6, 12); // single standard devs
             } else {
                 // One or more tags visible, run the full heuristic.
                 avgDist /= numTags;
@@ -190,7 +190,7 @@ public class VisionSubsystem extends SubsystemBase {
                 // Increase std devs based on (average) distance
                 if (numTags == 1 && avgDist > 4)
                     estStdDevs = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE);
-                else estStdDevs = estStdDevs.times(1 + (avgDist * avgDist / 30));
+                else estStdDevs = estStdDevs.times(1 + (avgDist * avgDist / 25.0)); // / 30
                 curStdDevs = estStdDevs;
             }
         }

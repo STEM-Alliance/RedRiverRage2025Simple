@@ -6,17 +6,21 @@ package frc.robot.subsystems;
 
 import static frc.robot.Constants.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.units.Units;
+import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.MutDistance;
 import edu.wpi.first.units.measure.MutLinearVelocity;
 import edu.wpi.first.units.measure.MutVoltage;
@@ -28,6 +32,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
+import frc.robot.commands.ApriltagAlignmentCommandV2;
 import frc.robot.misc.SwerveModule;
 import frc.robot.util.ControllerProcessing;
 import frc.robot.util.DataLogHelpers;
@@ -41,6 +46,11 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+import com.pathplanner.lib.path.GoalEndState;
+import com.pathplanner.lib.path.IdealStartingState;
+import com.pathplanner.lib.path.PathConstraints;
+import com.pathplanner.lib.path.PathPlannerPath;
+import com.pathplanner.lib.path.Waypoint;
 
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
@@ -171,10 +181,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
       this::getChassisSpeeds, // Robot-relative ChassisSpeeds supplier
       (speeds, feedforwards) -> driveRobotSpeeds(speeds), // Robot-relative driving with optional feedfowards.
 
-      new PPHolonomicDriveController(
-        new PIDConstants(3.5, 0.0, 0.0), // Translation PID constants
-        new PIDConstants(2.25, 0.0, 0.0) // Rotation PID constants
-      ),
+      kPathplannerDriveController,
 
       m_robotConfig, // Robot hardware configuration
 
@@ -515,4 +522,59 @@ public class DrivetrainSubsystem extends SubsystemBase {
   public Command sysIdDynamic(SysIdRoutine.Direction direction) {
     return m_sysIdRoutine.dynamic(direction);
   }
+
+  // See https://docs.google.com/document/d/10if4xjAaETTceUVn7l4J-jOCOnm5CJUDS5RAVNIJMQM/edit?tab=t.0 for everything below.
+  // This is all rough, untested, and copied code that I would like to try but im not sure if it works.
+  public LinearVelocity getVelocityMagnitude(ChassisSpeeds cs){
+    return MetersPerSecond.of(new Translation2d(cs.vxMetersPerSecond, cs.vyMetersPerSecond).getNorm());
+  }
+
+  public final Rotation2d getVelocityDirection(Pose2d desiredPose) {
+    ChassisSpeeds currentChassisSpeeds = getChassisSpeeds();
+
+    return new Rotation2d(currentChassisSpeeds.vxMetersPerSecond, currentChassisSpeeds.vyMetersPerSecond);
+  }
+
+  public final Command alignToPose(Pose2d desiredPose) {
+    List<Waypoint> waypoints = PathPlannerPath.waypointsFromPoses(
+      new Pose2d(m_poseEstimator.getEstimatedPosition().getTranslation(), getVelocityDirection(desiredPose)),
+      desiredPose
+    );
+
+    if (waypoints.get(0).anchor().getDistance(waypoints.get(1).anchor()) > 0.01) {
+      PathPlannerPath path = new PathPlannerPath(
+        waypoints,
+        new PathConstraints(1.0, 0.5, Math.PI / 6.0, Math.PI / 6.0),
+        new IdealStartingState(getVelocityMagnitude(getChassisSpeeds()), m_pigeon2.getRotation2d()),
+        new GoalEndState(0.0, desiredPose.getRotation())
+      );
+
+      path.preventFlipping = true;
+
+      return AutoBuilder.followPath(path).andThen(
+        new ApriltagAlignmentCommandV2(this, desiredPose)
+      );
+    }
+
+    else {
+      return new InstantCommand();
+    }
+  }
+
+    // public static Pose2d getClosestReefAprilTag(Pose2d pose) {
+    //     var alliance = DriverStation.getAlliance();
+        
+    //     ArrayList<Pose2d> reefPoseList;
+    //     if (alliance.isEmpty()) {
+    //         reefPoseList = allReefTagPoses;
+    //     } else{
+    //         reefPoseList = alliance.get() == Alliance.Blue ? 
+    //             blueReefTagPoses :
+    //             redReefTagPoses;
+    //     }
+
+
+    //     return pose.nearest(reefPoseList);
+
+    // }
 }
