@@ -58,7 +58,7 @@ public class Robot extends TimedRobot {
   /** This function is called once each time the robot enters Disabled mode. */
   @Override
   public void disabledInit() {
-    Elastic.selectTab("Autonomous");
+    if (DriverStation.isFMSAttached()) Elastic.selectTab("Autonomous");
   }
 
   @Override
@@ -96,7 +96,7 @@ public class Robot extends TimedRobot {
 
     // This logs the controller inputs so they can be reviewed for debugging.
     DriverStation.startDataLog(DataLogManager.getLog());
-    Elastic.selectTab("Teleoperated");
+    if (DriverStation.isFMSAttached()) Elastic.selectTab("Teleoperated");
   }
 
   /** This function is called periodically during operator control. */

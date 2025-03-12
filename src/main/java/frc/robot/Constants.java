@@ -100,11 +100,11 @@ public final class Constants {
     /********************************************
      * Elevator and Shooter
      *******************************************/
-    static public double kElevatorKp = 0.6;
+    static public double kElevatorKp = 0.3;
     static public enum kElevatorSetpoints {
-        L4      (55.5),
-        L3      (31),
-        L2      (15.0),
+        L4      (57),
+        L3      (36),
+        L2      (21),
         L1      (5),
         IDLE    (0),
         INTAKE  (0);
@@ -118,16 +118,20 @@ public final class Constants {
         public double getAsDouble() {return m_elevatorSetpoint;}
     }
 
-    static public double kShooterKp = 10;
+    static public double kShooterKp = 5;
     static public enum kShooterSetpoints {
-        L4      (0.74 - 0.1534),
-        L3      (0.72 - 0.1534),
-        L2      (0.72 - 0.1534),
-        L1      (0.72 - 0.1534),
-        INTAKE  (0.72 - 0.1534),
-        CLIMB   (0.15 - 0.1534),
-        INTAKE2 (0.08 - 0.1534),
-        IDLE    (0.9034 - 0.1534); 
+        CLIMB      (0.935), //
+        L4_2       (0.759), //
+        L4_1       (0.759), //
+        L3_2       (0.759), //
+        L3_1       (0.759), //
+        L2_2       (0.759), // 
+        L2_1       (0.759), // 
+        L1_2       (0.759), //
+        L1_1       (0.759), //
+        INTAKE2    (0.1), //
+        INTAKE1    (0.75),
+        IDLE       (0.935); 
 
         private final double m_shooterSetpoints;
 
@@ -145,10 +149,11 @@ public final class Constants {
 
     static public int kRumbleTimer = 100;
 
-    static public double kAlignXDistance = 0.3;
-    static public double kAlignYDistanceLeft = -0.13125 -0.02;
-    static public double kAlignYDistanceRight = 0.13 + 0.02;
-    
+    static public double kAlignXDistanceLeft = 0.44;
+    static public double kAlignYDistanceLeft = -0.28;
+    static public double kAlignXDistanceRight = 0.38;
+    static public double kAlignYDistanceRight = 0.04;
+
     /********************************************
      * Motor Current Limits
      * P = VI

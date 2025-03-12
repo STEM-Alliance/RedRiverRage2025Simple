@@ -74,7 +74,7 @@ public class ElevatorSubsystem extends SubsystemBase {
         
         shooterConfig
             .idleMode(IdleMode.kBrake)
-            .smartCurrentLimit(Constants.WindowLimit);
+            .smartCurrentLimit(Constants.Neo550Limit);
         shooterConfig.encoder
             .positionConversionFactor(1.0)
             .velocityConversionFactor(1.0);
@@ -95,9 +95,9 @@ public class ElevatorSubsystem extends SubsystemBase {
     }
 
     public void periodic() {
-        DataLogHelpers.logDouble(m_elevatorMotor.getOutputCurrent(), "ElevatorSubsystem/Elevator Current");
+        SmartDashboard.putNumber("ElevatorSubsystem/Elevator Current", m_elevatorMotor.getOutputCurrent());
         DataLogHelpers.logDouble(m_elevatorMotor.getMotorTemperature(), "ElevatorSubsystem/Elevator Temperature");
-        DataLogHelpers.logDouble(m_shooterMotor.getOutputCurrent(), "ElevatorSubsystem/Shooter Current");
+        SmartDashboard.putNumber("ElevatorSubsystem/Shooter Current", m_shooterMotor.getOutputCurrent());
         DataLogHelpers.logDouble(m_shooterMotor.getMotorTemperature(), "ElevatorSubsystem/Shooter Temperature");
         SmartDashboard.putNumber("ElevatorPos", -m_elevatorEncoder.getPosition());
         SmartDashboard.putBoolean("LimitLow", m_limitLow.get());
@@ -107,7 +107,7 @@ public class ElevatorSubsystem extends SubsystemBase {
 
     public final Command getControlLoopCommand() {
         return new RunCommand(
-            () -> {elevatorControlLoop(); shooterControlLoop();},
+            () -> {},//elevatorControlLoop(); shooterControlLoop();},
             this
         );
     }
@@ -123,7 +123,7 @@ public class ElevatorSubsystem extends SubsystemBase {
 
     private final void elevatorControlLoop() {
         SmartDashboard.putData("ElevatorPID", m_elevatorPID);
-        double elevatorOutput = MathUtil.clamp(-m_elevatorPID.calculate(-m_elevatorEncoder.getPosition()), -1, 1);
+        double elevatorOutput = MathUtil.clamp(m_elevatorPID.calculate(m_elevatorEncoder.getPosition()), -0.5, 0.5);
         SmartDashboard.putNumber("elevatorOutput", elevatorOutput);
 
         DataLogHelpers.logDouble(elevatorOutput, "ElevatorSubsystem/Elevator PID Output");
@@ -132,11 +132,11 @@ public class ElevatorSubsystem extends SubsystemBase {
         SmartDashboard.putNumber("Elevator Position", m_elevatorEncoder.getPosition());
         SmartDashboard.putNumber("Error", m_elevatorPID.getPositionError());
 
-        if ((elevatorOutput < 0.0) && (m_limitHigh.get())) {
+        if ((elevatorOutput < 0.0) && (m_limitLow.get())) {
             m_elevatorMotor.set(elevatorOutput);
         }
 
-        else if ((elevatorOutput > 0.0) && (m_limitLow.get())) {
+        else if ((elevatorOutput > 0.0) && (m_limitHigh.get())) {
             m_elevatorMotor.set(elevatorOutput);
         }
 
@@ -156,7 +156,7 @@ public class ElevatorSubsystem extends SubsystemBase {
 
     private final void shooterControlLoop() {
         SmartDashboard.putData("ShooterPID", m_shooterPID);
-        double shooterOutput = MathUtil.clamp(-m_shooterPID.calculate(m_intakePos.getPosition()), -0.25, 0.25);
+        double shooterOutput = MathUtil.clamp(m_shooterPID.calculate(m_intakePos.getPosition()), -0.075, 0.075);
         SmartDashboard.putNumber("ShooterOutput", shooterOutput);
 
         DataLogHelpers.logDouble(shooterOutput, "ElevatorSubsystem/Shooter PID Output");
@@ -182,7 +182,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     public final Command zeroHeight() {
         return new FunctionalCommand(
             () -> {},
-            () -> {m_elevatorMotor.set(0.2); m_elevatorEncoder.setPosition(0.0);},
+            () -> {m_elevatorMotor.set(-0.2); m_elevatorEncoder.setPosition(0.0);},
             interrupted -> stop(),
             () -> !m_limitLow.get(),
             this
@@ -202,14 +202,14 @@ public class ElevatorSubsystem extends SubsystemBase {
 
     public final Command up() {
         return new FunctionalCommand(() -> {}, 
-                                     ()->{m_elevatorMotor.set(-1);},
+                                     ()->{m_elevatorMotor.set(1);},
                                      interrupted -> stop(),
                                      ()->false);
     }
 
     public final Command down() {
         return new FunctionalCommand(() -> {}, 
-                                     ()->{m_elevatorMotor.set(1);},
+                                     ()->{m_elevatorMotor.set(-1);},
                                      interrupted -> stop(),
                                      ()->false);
     }
@@ -222,14 +222,14 @@ public class ElevatorSubsystem extends SubsystemBase {
 
     public final Command cw() {
         return new FunctionalCommand(() -> {}, 
-                                     ()->{m_shooterMotor.set(-0.5);},
+                                     ()->{m_shooterMotor.set(0.5);},
                                      interrupted -> stopRotate(),
                                      ()->false);
     }
 
     public final Command ccw() {
         return new FunctionalCommand(() -> {}, 
-                                     ()->{m_shooterMotor.set(0.5);},
+                                     ()->{m_shooterMotor.set(-0.5);},
                                      interrupted -> stopRotate(),
                                      ()->false);
     }

@@ -64,7 +64,7 @@ public class MoveBotCommand extends Command {
   @Override
   public void end(boolean interrupted) {
 
-    System.out.println("MoveBot stopped");
+    //System.out.println("MoveBot stopped");
     m_subsystem.controllerDrive(0, 0, 0, false, 0.02);
   }
 
@@ -74,7 +74,7 @@ public class MoveBotCommand extends Command {
     Pose2d curPose = m_subsystem.getPose();
     double xdiff = curPose.getX() - m_initialPose.getX();
     double ydiff = curPose.getY() - m_initialPose.getY();
-    System.out.println("xdiff: " + xdiff + " ydiff: " + ydiff);
+    //System.out.println("xdiff: " + xdiff + " ydiff: " + ydiff);
     double diffTime = Timer.getFPGATimestamp() - m_iniitalTime;
     if (diffTime > 2.75) {
       return true;

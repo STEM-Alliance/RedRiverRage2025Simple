@@ -69,8 +69,18 @@ public class RobotContainer {
     new VisionSubsystem(
       "FrontCAM",
       new Transform3d(
-        new Translation3d(0.27305, -0.076, 0.222),
-        new Rotation3d(0.0, -16.0 * (Math.PI / 180.0), 0.0) // 16 degrees vertical, negative
+        new Translation3d(0.0254, 0.0, 0.279),
+        new Rotation3d(0.0, 0.0, 0.0) // 16 degrees vertical, negative
+      ),
+
+      m_drivetrain.getPoseEstimator()
+    ),
+
+    new VisionSubsystem(
+      "BackCAM",
+      new Transform3d(
+        new Translation3d(-0.0254, 0.0, 0.279),
+        new Rotation3d(0.0, 0.0, Math.PI) // 16 degrees vertical, negative
       ),
 
       m_drivetrain.getPoseEstimator()
@@ -95,10 +105,10 @@ public class RobotContainer {
   }
 
   private final void configureControllers() {
-    m_driverController.a().whileTrue(m_drivetrain.driveStraight(1, false));
-    m_driverController.b().whileTrue(m_drivetrain.driveStraight(1.0, true));
+    //m_driverController.a().whileTrue(m_drivetrain.driveStraight(1, false));
+    //m_driverController.b().whileTrue(m_drivetrain.driveStraight(1.0, true));
     m_driverController.x().onTrue(m_drivetrain.resetGyro());
-    m_driverController.y().onTrue(m_drivetrain.calculateWheelDiameters(m_driverController, m_driverController.povUp()));
+    //m_driverController.y().onTrue(m_drivetrain.calculateWheelDiameters(m_driverController, m_driverController.povUp()));
 
     m_driverController.leftBumper().onTrue(m_climb.toggleClimber().alongWith(m_elevator.setState(kElevatorSetpoints.IDLE, kShooterSetpoints.CLIMB)).alongWith(m_drivetrain.toggleClimbSpeed()).alongWith(new InstantCommand(() -> {
       Elastic.selectTab("Climb");
@@ -106,16 +116,18 @@ public class RobotContainer {
 
     m_driverController.rightBumper().onTrue(m_climb.toggleClaw());
 
-    m_driverController.leftTrigger()
-      .whileTrue(new ApriltagAlignment(-1, -1, Constants.kAlignYDistanceLeft, m_cameras, m_drivetrain, true)
-      .andThen(new ApriltagAlignment(-1, Constants.kAlignXDistance, -1, m_cameras, m_drivetrain, true)
-      .andThen(new DriveForwardMeters(1.45, m_drivetrain))));
-    m_driverController.rightTrigger()
-      .whileTrue(new ApriltagAlignment(-1, -1, Constants.kAlignYDistanceRight, m_cameras, m_drivetrain, true)
-      .andThen(new ApriltagAlignment(-1, Constants.kAlignXDistance, -1, m_cameras, m_drivetrain, true)
-      .andThen(new DriveForwardMeters(1.45, m_drivetrain))));
+    // m_driverController.leftTrigger()
+    //   .whileTrue(new ApriltagAlignment(-1, -1, Constants.kAlignYDistanceLeft, m_cameras, m_drivetrain, true)
+    //   .andThen(new ApriltagAlignment(-1, Constants.kAlignXDistance, -1, m_cameras, m_drivetrain, true)
+    //   .andThen(new DriveForwardMeters(1.45, m_drivetrain))));
+    // m_driverController.rightTrigger()
+    //   .whileTrue(new ApriltagAlignment(-1, -1, Constants.kAlignYDistanceRight, m_cameras, m_drivetrain, true)
+    //   .andThen(new ApriltagAlignment(-1, Constants.kAlignXDistance, -1, m_cameras, m_drivetrain, true)
+    //   .andThen(new DriveForwardMeters(1.45, m_drivetrain))));
     // m_driverController.leftTrigger().whileTrue(new ApriltagAlignment(-1, Constants.kAlignXDistance, Constants.kAlignYDistanceLeft, m_cameras, m_drivetrain, true).andThen(new DriveForwardMeters(1.45, m_drivetrain)));
     // m_driverController.rightTrigger().whileTrue(new ApriltagAlignment(-1, Constants.kAlignXDistance, Constants.kAlignYDistanceRight, m_cameras, m_drivetrain, true).andThen(new DriveForwardMeters(1.45, m_drivetrain)));
+    m_driverController.leftTrigger().whileTrue(new ApriltagAlignment(-1, Constants.kAlignXDistanceLeft, Constants.kAlignYDistanceLeft, m_cameras, m_drivetrain, true));
+    m_driverController.rightTrigger().whileTrue(new ApriltagAlignment(-1, Constants.kAlignXDistanceRight, Constants.kAlignYDistanceRight, m_cameras, m_drivetrain, true));
 
     //m_driverController.leftBumper().whileTrue(m_elevator.cw());
     //m_driverController.rightBumper().whileTrue(m_elevator.ccw());
@@ -136,25 +148,25 @@ public class RobotContainer {
 
     m_operatorButtonPanel.button(1).onTrue(m_elevator.setState(
       kElevatorSetpoints.L1,
-      kShooterSetpoints.L1
+      kShooterSetpoints.L1_1
     )).onFalse(m_elevator.setStateIdle());
 
     m_operatorButtonPanel.button(2).onTrue(m_elevator.setState(
       kElevatorSetpoints.L2,
-      kShooterSetpoints.L2
+      kShooterSetpoints.L2_1
     )).onFalse(m_elevator.setStateIdle());
 
     m_operatorButtonPanel.button(3).onTrue(m_elevator.setState(
       kElevatorSetpoints.L3,
-      kShooterSetpoints.L3
+      kShooterSetpoints.L3_1
     )).onFalse(m_elevator.setStateIdle());
 
     m_operatorButtonPanel.button(4).onTrue(m_elevator.setState(
       kElevatorSetpoints.L4,
-      kShooterSetpoints.L4
+      kShooterSetpoints.L4_1
     )).onFalse(m_elevator.setStateIdle());
 
-    m_operatorButtonPanel.button(6).onTrue(m_intake.startIntaking().alongWith(m_elevator.setState(kElevatorSetpoints.INTAKE, kShooterSetpoints.INTAKE)))
+    m_operatorButtonPanel.button(6).onTrue(m_intake.startIntaking().alongWith(m_elevator.setState(kElevatorSetpoints.INTAKE, kShooterSetpoints.INTAKE1)))
       .onFalse(m_intake.stopIntaking().alongWith(m_elevator.setState(kElevatorSetpoints.IDLE, kShooterSetpoints.IDLE)));
     
     m_operatorButtonPanel.button(5).onTrue(m_intake.startShooting())
@@ -233,21 +245,21 @@ public class RobotContainer {
    * after the {@link AutoBuilder} is created, but before the Pathplanner auto chooser is built.
   */
   private final void registerPathplannerCommands() {
-    NamedCommands.registerCommand("AlignLeftInterrupt", new ApriltagOverride(-1, Constants.kAlignXDistance, Constants.kAlignYDistanceLeft, m_cameras, null));
-    NamedCommands.registerCommand("AlignLeftOffset", new ApriltagAlignment(-1, Constants.kAlignXDistance, Constants.kAlignYDistanceLeft, m_cameras, m_drivetrain, true));
+    // NamedCommands.registerCommand("AlignLeftInterrupt", new ApriltagOverride(-1, Constants.kAlignXDistanceLeft, Constants.kAlignYDistanceLeft, m_cameras, null));
+    // NamedCommands.registerCommand("AlignLeftOffset", new ApriltagAlignment(-1, Constants.kAlignXDistanceLeft, Constants.kAlignYDistanceLeft, m_cameras, m_drivetrain, true));
 
-    NamedCommands.registerCommand("AlignRightInterrupt", new ApriltagOverride(-1, Constants.kAlignXDistance, Constants.kAlignYDistanceRight, m_cameras, null));
-    NamedCommands.registerCommand("AlignRightOffset", new ApriltagAlignment(-1, Constants.kAlignXDistance, Constants.kAlignYDistanceRight, m_cameras, m_drivetrain, true));
+    // NamedCommands.registerCommand("AlignRightInterrupt", new ApriltagOverride(-1, Constants.kAlignXDistanceRight, Constants.kAlignYDistanceRight, m_cameras, null));
+    // NamedCommands.registerCommand("AlignRightOffset", new ApriltagAlignment(-1, Constants.kAlignXDistanceRight, Constants.kAlignYDistanceRight, m_cameras, m_drivetrain, true));
     NamedCommands.registerCommand("DriveForwardMeters", new DriveForwardMeters(1.55, m_drivetrain));
     NamedCommands.registerCommand("Stop", stopAuto());
 
-    NamedCommands.registerCommand("SetState L4", m_elevator.setState(kElevatorSetpoints.L4, kShooterSetpoints.L4)
+    NamedCommands.registerCommand("SetState L4", m_elevator.setState(kElevatorSetpoints.L4, kShooterSetpoints.L4_1)
       .alongWith(m_elevator.atSetpoints()));
     NamedCommands.registerCommand("Shoot 3 Sec", m_intake.startShooting().andThen(new WaitCommand(1.0))
       .andThen(m_intake.stopShooting()));
     NamedCommands.registerCommand("SetState IDLE", m_elevator.setState(kElevatorSetpoints.IDLE, kShooterSetpoints.IDLE));
-    NamedCommands.registerCommand("Just SetState INTAKE", m_elevator.setState(kElevatorSetpoints.INTAKE, kShooterSetpoints.INTAKE));
-    NamedCommands.registerCommand("SetState INTAKE", m_elevator.setState(kElevatorSetpoints.INTAKE, kShooterSetpoints.INTAKE).andThen(m_intake.startIntaking())
+    NamedCommands.registerCommand("Just SetState INTAKE", m_elevator.setState(kElevatorSetpoints.INTAKE, kShooterSetpoints.INTAKE1));
+    NamedCommands.registerCommand("SetState INTAKE", m_elevator.setState(kElevatorSetpoints.INTAKE, kShooterSetpoints.INTAKE1).andThen(m_intake.startIntaking())
       .andThen(m_elevator.setState(kElevatorSetpoints.IDLE, kShooterSetpoints.IDLE)));
 
     NamedCommands.registerCommand("Shoot", m_intake.startShooting().until(new Trigger(m_intake::isIntakeNotLoaded)));

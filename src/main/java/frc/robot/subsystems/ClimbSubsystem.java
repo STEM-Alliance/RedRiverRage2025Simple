@@ -32,14 +32,14 @@ public class ClimbSubsystem extends SubsystemBase {
 
     public final Command toggleClimber() {
         return new InstantCommand(() -> {
-            System.out.println("toggleClimber");
+            //System.out.println("toggleClimber");
             m_climberSolenoid.toggle();
         });
     }
 
     public final Command toggleClaw() {
         return new InstantCommand(() -> {
-            System.out.println("toggleClaw");
+            //System.out.println("toggleClaw");
             m_clawSolenoid.toggle();
         });
     }

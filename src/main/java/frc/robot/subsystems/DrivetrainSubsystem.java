@@ -369,7 +369,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
   }
 
   public void resetPose(Pose2d resetPose) {
-    System.out.println("Reset pose to " + resetPose);
+    //System.out.println("Reset pose to " + resetPose);
     //m_poseEstimator.resetPosition(m_pigeon2.getRotation2d(), getModulePositions(), resetPose);
   }
 
@@ -469,7 +469,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
   }
 
   private final void driveVoltage(Voltage outputVolts) {
-    System.out.println("Unimplemented.");
+    //System.out.println("Unimplemented.");
     // for (SwerveModule module : m_modules) {
     //   module.getDriveMotor().setVoltage(outputVolts);
     // }

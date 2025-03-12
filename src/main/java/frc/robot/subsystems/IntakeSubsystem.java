@@ -37,9 +37,9 @@ public class IntakeSubsystem extends SubsystemBase {
         currentLimits
             .withStatorCurrentLimitEnable(true)
             .withSupplyCurrentLimitEnable(true)
-            .withStatorCurrentLimit(Amps.of(20.0))
-            .withSupplyCurrentLimit(Amps.of(20.0))
-            .withSupplyCurrentLowerLimit(Amps.of(20.0));
+            .withStatorCurrentLimit(Amps.of(30.0))
+            .withSupplyCurrentLimit(Amps.of(30.0))
+            .withSupplyCurrentLowerLimit(Amps.of(30.0));
 
         m_intakeMotor.getConfigurator().apply(currentLimits);
     }
@@ -60,6 +60,7 @@ public class IntakeSubsystem extends SubsystemBase {
             m_controller.getHID().setRumble(RumbleType.kBothRumble, 0);
         }
 
+        SmartDashboard.putNumber("IntakeCurrent", m_intakeMotor.getSupplyCurrent().getValueAsDouble());
         SmartDashboard.putNumber("EnterDistance", m_enterSensor.get_distance());
         SmartDashboard.putNumber("ExitDistance", m_exitSensor.get_distance());
     }
@@ -77,8 +78,8 @@ public class IntakeSubsystem extends SubsystemBase {
 
     public final Command startIntaking() {
         return new FunctionalCommand(
-            () -> {m_intakeMotor.set(0.2); System.out.println("Set 1.0");},
-            () -> {System.out.println("Intaking...");},
+            () -> {m_intakeMotor.set(0.2);}, //System.out.println("Set 1.0");},
+            () -> {},//System.out.println("Intaking...");},
             interrupted -> {m_intakeMotor.set(0.0);},
             () -> checkAndStopIntake(),
             this
@@ -96,21 +97,21 @@ public class IntakeSubsystem extends SubsystemBase {
 
     public final Command stopIntaking() {
         return new InstantCommand(
-            () -> {m_intakeMotor.set(0.0); System.out.println("Set 0.0");},
+            () -> {m_intakeMotor.set(0.0);},// System.out.println("Set 0.0");},
             this
         );
     }
 
     public final Command startShooting() {
         return new InstantCommand(
-            () -> {m_intakeMotor.set(1.0); System.out.println("Set 1.0");},
+            () -> {m_intakeMotor.set(1.0);}, //System.out.println("Set 1.0");},
             this
         );
     }
 
     public final Command stopShooting() {
         return new InstantCommand(
-            () -> {m_intakeMotor.set(0.0); System.out.println("Set 0.0");},
+            () -> {m_intakeMotor.set(0.0);}, //System.out.println("Set 0.0");},
             this
         );
     }
