@@ -410,10 +410,6 @@ public class DrivetrainSubsystem extends SubsystemBase {
   public final Command toggleClimbSpeed() {
     return new InstantCommand(() -> {
       m_climbSpeed = !m_climbSpeed;
-
-      // for (SwerveModule swerveModule : m_modules) {
-      //   swerveModule.setBrake(m_climbSpeed);
-      // }
     });
   }
 

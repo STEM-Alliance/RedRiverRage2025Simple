@@ -106,8 +106,9 @@ public final class Constants {
         L3      (36),
         L2      (21),
         L1      (5),
-        IDLE    (0),
-        INTAKE  (0);
+        CLIMB   (8),
+        INTAKE  (0),
+        IDLE    (0);
         
         private final double m_elevatorSetpoint;
 
@@ -118,20 +119,21 @@ public final class Constants {
         public double getAsDouble() {return m_elevatorSetpoint;}
     }
 
-    static public double kShooterKp = 5;
+    static public double kShooterKp = 1.5;
     static public enum kShooterSetpoints {
-        CLIMB      (0.935), //
-        L4_2       (0.759), //
-        L4_1       (0.759), //
-        L3_2       (0.759), //
-        L3_1       (0.759), //
-        L2_2       (0.759), // 
-        L2_1       (0.759), // 
-        L1_2       (0.759), //
-        L1_1       (0.759), //
-        INTAKE2    (0.1), //
-        INTAKE1    (0.75),
-        IDLE       (0.935); 
+        CLIMB      (0.3638),
+        INITIAL    (0.3638),
+        L4_2       (0.75 - 0.401),
+        L4_1       (0.75 - 0.401),
+        L3_2       (0.75 - 0.401),
+        L3_1       (0.75 - 0.401),
+        L2_2       (0.75 - 0.401), 
+        L2_1       (0.75 - 0.401), 
+        L1_2       (0.75 - 0.401),
+        L1_1       (0.75 - 0.401),
+        INTAKE2    ((0.1 - 0.401) + 1),
+        INTAKE1    (0.75 - 0.401),
+        IDLE       (0.534); 
 
         private final double m_shooterSetpoints;
 
@@ -142,8 +144,8 @@ public final class Constants {
         public double getAsDouble() {return m_shooterSetpoints;}
     }
 
-    static public double kElevatorMaxVelocity = 30;
-    static public double kElevatorMaxAcceleration = kElevatorMaxVelocity/0.3;
+    static public double kElevatorMaxVelocity = 50;
+    static public double kElevatorMaxAcceleration = kElevatorMaxVelocity/0.5;
     static public double kShooterMaxVelocity = 2;
     static public double kShooterMaxAcceleration = kShooterMaxVelocity/0.15;
 
