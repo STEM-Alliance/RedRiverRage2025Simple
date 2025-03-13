@@ -103,8 +103,8 @@ public final class Constants {
     static public double kElevatorKp = 0.3;
     static public enum kElevatorSetpoints {
         L4      (57),
-        L3      (36),
-        L2      (21),
+        L3      (32),
+        L2      (18),
         L1      (5),
         CLIMB   (8),
         INTAKE  (0),
@@ -119,20 +119,20 @@ public final class Constants {
         public double getAsDouble() {return m_elevatorSetpoint;}
     }
 
-    static public double kShooterKp = 1.5;
+    static public double kShooterKp = 3.0;
     static public enum kShooterSetpoints {
-        CLIMB      (0.3638),
+        CLIMB      (0.82),
         INITIAL    (0.3638),
-        L4_2       (0.75 - 0.401),
-        L4_1       (0.75 - 0.401),
-        L3_2       (0.75 - 0.401),
-        L3_1       (0.75 - 0.401),
-        L2_2       (0.75 - 0.401), 
-        L2_1       (0.75 - 0.401), 
-        L1_2       (0.75 - 0.401),
-        L1_1       (0.75 - 0.401),
-        INTAKE2    ((0.1 - 0.401) + 1),
-        INTAKE1    (0.75 - 0.401),
+        L4_2       (0.7),
+        L4_1       (0.7),
+        L3_2       (0.72),
+        L3_1       (0.72),
+        L2_2       (0.72), 
+        L2_1       (0.72), 
+        L1_2       (0.72),
+        L1_1       (0.72),
+        INTAKE2    (0.35),
+        INTAKE1    (0.72),
         IDLE       (0.534); 
 
         private final double m_shooterSetpoints;
@@ -151,10 +151,10 @@ public final class Constants {
 
     static public int kRumbleTimer = 100;
 
-    static public double kAlignXDistanceLeft = 0.44;
-    static public double kAlignYDistanceLeft = -0.28;
-    static public double kAlignXDistanceRight = 0.38;
-    static public double kAlignYDistanceRight = 0.04;
+    static public double kAlignXDistanceLeft = 0.41;
+    static public double kAlignYDistanceLeft = -0.24;
+    static public double kAlignXDistanceRight = 0.41;
+    static public double kAlignYDistanceRight = 0.14;
 
     /********************************************
      * Motor Current Limits

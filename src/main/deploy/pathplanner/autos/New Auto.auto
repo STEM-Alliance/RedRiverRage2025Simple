@@ -15,6 +15,30 @@
           "data": {
             "pathName": "Choreo 2"
           }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Choreo 3"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Choreo 4"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Choreo 5"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Choreo 6"
+          }
         }
       ]
     }

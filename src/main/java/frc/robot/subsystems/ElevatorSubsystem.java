@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.Constants;
 import frc.robot.Constants.kElevatorSetpoints;
 import frc.robot.Constants.kShooterSetpoints;
@@ -107,7 +108,7 @@ public class ElevatorSubsystem extends SubsystemBase {
 
     public final Command getControlLoopCommand() {
         return new RunCommand(
-            () -> {},//shooterControlLoop();},//elevatorControlLoop();},// shooterControlLoop();},
+            () -> {elevatorControlLoop(); shooterControlLoop();},
             this
         );
     }
@@ -123,7 +124,7 @@ public class ElevatorSubsystem extends SubsystemBase {
 
     private final void elevatorControlLoop() {
         SmartDashboard.putData("ElevatorPID", m_elevatorPID);
-        double elevatorOutput = MathUtil.clamp(m_elevatorPID.calculate(m_elevatorEncoder.getPosition()), -0.5, 0.75);
+        double elevatorOutput = MathUtil.clamp(m_elevatorPID.calculate(m_elevatorEncoder.getPosition()), -0.6, 0.75);
         SmartDashboard.putNumber("elevatorOutput", elevatorOutput);
 
         DataLogHelpers.logDouble(elevatorOutput, "ElevatorSubsystem/Elevator PID Output");
@@ -156,7 +157,7 @@ public class ElevatorSubsystem extends SubsystemBase {
 
     private final void shooterControlLoop() {
         SmartDashboard.putData("ShooterPID", m_shooterPID);
-        double shooterOutput = MathUtil.clamp(m_shooterPID.calculate(m_intakePos.getPosition()), -0.075, 0.075);
+        double shooterOutput = MathUtil.clamp(m_shooterPID.calculate(m_intakePos.getPosition()), -0.125, 0.125);
         SmartDashboard.putNumber("ShooterOutput", shooterOutput);
 
         DataLogHelpers.logDouble(shooterOutput, "ElevatorSubsystem/Shooter PID Output");

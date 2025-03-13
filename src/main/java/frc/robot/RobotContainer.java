@@ -63,8 +63,11 @@ public class RobotContainer {
   private final DrivetrainSubsystem m_drivetrain = new DrivetrainSubsystem(m_field);
 
   private final ClimbSubsystem m_climb = new ClimbSubsystem(15, 14, 13, 12);
-  private final IntakeSubsystem m_intake = new IntakeSubsystem(16, 0, 1, m_driverController);
+  private final IntakeSubsystem m_intake = new IntakeSubsystem(16, 1, 0, m_driverController);
 
+  // These can be changed back; Joe wanted to make the back of the robot
+  // the front since the shooter was getting caught on the cable chain,
+  // but that was fixed so the cameras can be renamed to their original names.
   private final VisionSubsystem[] m_cameras = new VisionSubsystem[]{
     new VisionSubsystem(
       "FrontCAM",
@@ -245,11 +248,11 @@ public class RobotContainer {
    * after the {@link AutoBuilder} is created, but before the Pathplanner auto chooser is built.
   */
   private final void registerPathplannerCommands() {
-    // NamedCommands.registerCommand("AlignLeftInterrupt", new ApriltagOverride(-1, Constants.kAlignXDistanceLeft, Constants.kAlignYDistanceLeft, m_cameras, null));
-    // NamedCommands.registerCommand("AlignLeftOffset", new ApriltagAlignment(-1, Constants.kAlignXDistanceLeft, Constants.kAlignYDistanceLeft, m_cameras, m_drivetrain, true));
+    NamedCommands.registerCommand("AlignLeftInterrupt", new ApriltagOverride(-1, Constants.kAlignXDistanceLeft, Constants.kAlignYDistanceLeft, m_cameras, null));
+    NamedCommands.registerCommand("AlignLeftOffset", new ApriltagAlignment(-1, Constants.kAlignXDistanceLeft, Constants.kAlignYDistanceLeft, m_cameras, m_drivetrain, true));
 
-    // NamedCommands.registerCommand("AlignRightInterrupt", new ApriltagOverride(-1, Constants.kAlignXDistanceRight, Constants.kAlignYDistanceRight, m_cameras, null));
-    // NamedCommands.registerCommand("AlignRightOffset", new ApriltagAlignment(-1, Constants.kAlignXDistanceRight, Constants.kAlignYDistanceRight, m_cameras, m_drivetrain, true));
+    NamedCommands.registerCommand("AlignRightInterrupt", new ApriltagOverride(-1, Constants.kAlignXDistanceRight, Constants.kAlignYDistanceRight, m_cameras, null));
+    NamedCommands.registerCommand("AlignRightOffset", new ApriltagAlignment(-1, Constants.kAlignXDistanceRight, Constants.kAlignYDistanceRight, m_cameras, m_drivetrain, true));
     NamedCommands.registerCommand("DriveForwardMeters", new DriveForwardMeters(1.55, m_drivetrain));
     NamedCommands.registerCommand("Stop", stopAuto());
 
