@@ -21,9 +21,9 @@ public class ApriltagAlignment extends Command {
     private final VisionSubsystem m_photonVision;
     private final DrivetrainSubsystem m_drivetrain;
 
-    private final PIDController m_xPID = new PIDController(0.5, 0.0, 0.0);
+    private final PIDController m_xPID = new PIDController(1, 0.0, 0.0);
 
-    private final PIDController m_yPID = new PIDController(1, 0.0, 0.0);
+    private final PIDController m_yPID = new PIDController(0.75, 0.0, 0.0);
 
     private final PIDController m_rotPID = new PIDController(2.5, 0.2, 0.0);
 
@@ -78,6 +78,7 @@ public class ApriltagAlignment extends Command {
         m_apriltag = -1;
         m_photonVision.getCamera().takeOutputSnapshot();
         SmartDashboard.putBoolean("FinishedAligning", false);
+        m_counter = 0;
     }
 
     public final ChassisSpeeds m_desiredChassisSpeeds = new ChassisSpeeds();
@@ -104,7 +105,7 @@ public class ApriltagAlignment extends Command {
             var x_offset = target.bestCameraToTarget.getMeasureX().baseUnitMagnitude();
             var y_offset = target.bestCameraToTarget.getMeasureY().baseUnitMagnitude();
             var rot = target.bestCameraToTarget.getRotation().getAngle() - 0.03;
-            m_desiredChassisSpeeds.vxMetersPerSecond = MathUtil.clamp(-m_xPID.calculate(x_offset), -kMaxAlignmentSpeed, kMaxAlignmentSpeed);
+            m_desiredChassisSpeeds.vxMetersPerSecond = MathUtil.clamp(-m_xPID.calculate(x_offset), -kMaxAlignmentSpeed * (m_yPID.atSetpoint() ? 1 : 0.5), kMaxAlignmentSpeed * (m_yPID.atSetpoint() ? 1 : 0.5));
             m_desiredChassisSpeeds.vyMetersPerSecond = MathUtil.clamp(-m_yPID.calculate(y_offset), -kMaxAlignmentSpeed, kMaxAlignmentSpeed);
             m_desiredChassisSpeeds.omegaRadiansPerSecond = MathUtil.clamp(m_rotPID.calculate(rot), -kMaxAlignmentAngularSpeed, kMaxAlignmentAngularSpeed);
 
@@ -118,6 +119,11 @@ public class ApriltagAlignment extends Command {
             SmartDashboard.putBoolean(prefix + "_atRot", m_rotPID.atSetpoint());
             SmartDashboard.putNumber(prefix + "_counter", m_counter);
             m_counter++;
+
+            if ((m_counter % 50) == 0)
+            {
+                m_photonVision.getCamera().takeOutputSnapshot();
+            }
         }
     }
 
@@ -134,6 +140,7 @@ public class ApriltagAlignment extends Command {
         if (m_xPID.atSetpoint() && m_yPID.atSetpoint() && m_rotPID.atSetpoint() && (m_apriltag > 0))
         {
             SmartDashboard.putBoolean("FinishedAligning", true);
+            m_photonVision.getCamera().takeOutputSnapshot();
             //System.out.println("ApriltagAlignment isFinished");
             return true;
         }

@@ -119,6 +119,9 @@ public class RobotContainer {
 
     m_driverController.rightBumper().onTrue(m_climb.toggleClaw());
 
+    m_driverController.pov(90).whileTrue(m_elevator.cw());
+    m_driverController.pov(270).whileTrue(m_elevator.ccw());
+
     // m_driverController.leftTrigger()
     //   .whileTrue(new ApriltagAlignment(-1, -1, Constants.kAlignYDistanceLeft, m_cameras, m_drivetrain, true)
     //   .andThen(new ApriltagAlignment(-1, Constants.kAlignXDistance, -1, m_cameras, m_drivetrain, true)

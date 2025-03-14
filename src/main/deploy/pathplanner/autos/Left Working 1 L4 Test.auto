@@ -19,12 +19,6 @@
         {
           "type": "named",
           "data": {
-            "name": "DriveForwardMeters"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
             "name": "SetState L4"
           }
         },

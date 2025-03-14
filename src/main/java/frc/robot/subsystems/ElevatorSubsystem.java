@@ -60,7 +60,7 @@ public class ElevatorSubsystem extends SubsystemBase {
         m_elevatorPID.setIZone(0.0);
         m_elevatorPID.setIntegratorRange(0.0, 0.0);
 
-        m_shooterPID.setIZone(0.1);
+        m_shooterPID.setIZone(0.15);
         m_shooterPID.setIntegratorRange(-0.5, 0.5);
 
         SparkMaxConfig elevatorConfig = new SparkMaxConfig();

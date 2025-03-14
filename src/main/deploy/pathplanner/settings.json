@@ -6,8 +6,8 @@
     "Right 3 L4 Auto"
   ],
   "autoFolders": [],
-  "defaultMaxVel": 2.5,
-  "defaultMaxAccel": 3.0,
+  "defaultMaxVel": 2.0,
+  "defaultMaxAccel": 2.0,
   "defaultMaxAngVel": 630.0,
   "defaultMaxAngAccel": 2314.0,
   "defaultNominalVoltage": 12.0,

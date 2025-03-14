@@ -103,9 +103,9 @@ public final class Constants {
      *******************************************/
     static public double kElevatorKp = 0.3;
     static public enum kElevatorSetpoints {
-        L4      (56),
-        L3      (32),
-        L2      (18),
+        L4      (57),
+        L3      (33),
+        L2      (19),
         L1      (5),
         CLIMB   (8),
         INTAKE  (0),
@@ -120,22 +120,22 @@ public final class Constants {
         public double getAsDouble() {return m_elevatorSetpoint;}
     }
 
-    static public double kShooterKp = 10.0;
-    static public double kShooterKi = 10.0;
+    static public double kShooterKp = 15.0;
+    static public double kShooterKi = 1.0;
     static public enum kShooterSetpoints {
-        CLIMB      (0.62 - 0.04),
-        INITIAL    (0.515 - 0.04), //0.3638
-        L4_2       (0.22 - 0),
-        L4_1       (0.22 - 0),
-        L3_2       (0.22 - 0.04),
-        L3_1       (0.22 - 0.04),
-        L2_2       (0.22 - 0.04), 
-        L2_1       (0.22 - 0.04), 
-        L1_2       (0.22 - 0.04),
-        L1_1       (0.22 - 0.04),
-        INTAKE2    (0.525 - 0.04),
-        INTAKE1    (0.205 - 0.04),
-        IDLE       (0.381 - 0.04); //0.534
+        CLIMB      (0.52),
+        INITIAL    (0.652), //0.3638
+        L4_2       (0.635),
+        L4_1       (0.635),
+        L3_2       (0.635),
+        L3_1       (0.635),
+        L2_2       (0.635), 
+        L2_1       (0.635), 
+        L1_2       (0.635),
+        L1_1       (0.635),
+        INTAKE2    (0.948),
+        INTAKE1    (0.615),
+        IDLE       (0.796); //0.534
 
         private final double m_shooterSetpoints;
 
@@ -147,7 +147,7 @@ public final class Constants {
     }
 
     static public double kElevatorMaxVelocity = 50;
-    static public double kElevatorMaxAcceleration = kElevatorMaxVelocity/0.5;
+    static public double kElevatorMaxAcceleration = kElevatorMaxVelocity/1.0;
     static public double kShooterMaxVelocity = 2;
     static public double kShooterMaxAcceleration = kShooterMaxVelocity/0.15;
 
@@ -161,9 +161,9 @@ public final class Constants {
     /********************************************
      * Alignment settings
      *******************************************/
-    static public double kAlignmentXTolerance = 0.01;
-    static public double kAlignmentYTolerance = 0.01;
-    static public double kAlignmentRotTolerance= 0.01;
+    static public double kAlignmentXTolerance = 0.02;
+    static public double kAlignmentYTolerance = 0.02;
+    static public double kAlignmentRotTolerance= 0.03;
     static public double kAlignmentRotIZone = Units.degreesToRadians(12.5);
     static public double kAlignmentRotIntegrationZone = 0.1;
 

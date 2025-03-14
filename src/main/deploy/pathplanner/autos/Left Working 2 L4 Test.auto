@@ -19,12 +19,6 @@
         {
           "type": "named",
           "data": {
-            "name": "DriveForwardMeters"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
             "name": "SetState L4"
           }
         },
@@ -63,42 +57,6 @@
                 }
               }
             ]
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Copy of Pickup to RB Reef"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "AlignRightOffset"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "DriveForwardMeters"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "SetState L4"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Shoot 3 Sec"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "SetState IDLE"
           }
         }
       ]
