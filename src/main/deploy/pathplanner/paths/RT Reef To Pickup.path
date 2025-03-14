@@ -4,15 +4,15 @@
     {
       "anchor": {
         "x": 5.733,
-        "y": 1.9969999999999992
+        "y": 2.0
       },
       "prevControl": null,
       "nextControl": {
-        "x": 4.853554738313732,
-        "y": 1.67815646049823
+        "x": 5.157749999999999,
+        "y": 1.75625
       },
       "isLocked": false,
-      "linkedName": "Drive Out RT End"
+      "linkedName": null
     },
     {
       "anchor": {
@@ -25,7 +25,7 @@
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Reef Right"
+      "linkedName": null
     }
   ],
   "rotationTargets": [],
@@ -48,7 +48,7 @@
   "folder": "Right 3 L4 Auto",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 123.95905981967628
+    "rotation": 120.96375653207345
   },
   "useDefaultConstraints": true
 }

@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 7.244249999999999,
-        "y": 7.21325
+        "x": 7.215,
+        "y": 7.29
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.63,
-        "y": 6.8135
+        "x": 6.162000000000001,
+        "y": 7.281499999999999
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 5.421,
-        "y": 5.7215
+        "x": 5.2845,
+        "y": 2.6892499999999995
       },
       "prevControl": {
-        "x": 5.772,
-        "y": 6.0335
+        "x": 5.2845,
+        "y": 2.9392499999999995
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Drive Out RT End"
     }
   ],
   "rotationTargets": [],
@@ -56,7 +56,7 @@
   },
   "goalEndState": {
     "velocity": 0.0,
-    "rotation": -122.66091272167372
+    "rotation": 120.96375653207345
   },
   "reversed": false,
   "folder": "Right 3 L4 Auto",

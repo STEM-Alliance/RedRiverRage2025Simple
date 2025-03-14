@@ -125,16 +125,16 @@ public final class Constants {
     static public enum kShooterSetpoints {
         CLIMB      (0.52),
         INITIAL    (0.652), //0.3638
-        L4_2       (0.635),
-        L4_1       (0.635),
-        L3_2       (0.635),
-        L3_1       (0.635),
-        L2_2       (0.635), 
-        L2_1       (0.635), 
-        L1_2       (0.635),
-        L1_1       (0.635),
-        INTAKE2    (0.948),
-        INTAKE1    (0.615),
+        L4_2       (0.62),
+        L4_1       (0.62),
+        L3_2       (0.62),
+        L3_1       (0.62),
+        L2_2       (0.62), 
+        L2_1       (0.62), 
+        L1_2       (0.62),
+        L1_1       (0.62),
+        INTAKE2    (0.948 + 0.015),
+        INTAKE1    (0.615 - 0.015),
         IDLE       (0.796); //0.534
 
         private final double m_shooterSetpoints;
@@ -162,7 +162,7 @@ public final class Constants {
      * Alignment settings
      *******************************************/
     static public double kAlignmentXTolerance = 0.02;
-    static public double kAlignmentYTolerance = 0.02;
+    static public double kAlignmentYTolerance = 0.025;
     static public double kAlignmentRotTolerance= 0.03;
     static public double kAlignmentRotIZone = Units.degreesToRadians(12.5);
     static public double kAlignmentRotIntegrationZone = 0.1;
