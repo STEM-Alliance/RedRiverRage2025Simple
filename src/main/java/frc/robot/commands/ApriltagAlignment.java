@@ -10,6 +10,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.Constants;
 import frc.robot.subsystems.DrivetrainSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
 import frc.robot.util.DataLogHelpers;
@@ -29,8 +30,7 @@ public class ApriltagAlignment extends Command {
     private int m_counter = 0;
     private int m_apriltag;
     private boolean m_output;
-    private boolean m_activeX;
-    private boolean m_activeY;
+    private String prefix; 
 
     public  ApriltagAlignment(
         int apriltag,
@@ -49,15 +49,17 @@ public class ApriltagAlignment extends Command {
         m_xPID.setSetpoint(xOffset);
         m_yPID.setSetpoint(yOffset);
         m_rotPID.setSetpoint(Math.PI);
-        m_xPID.setTolerance(0.015);
-        m_yPID.setTolerance(0.015);
-        m_rotPID.setTolerance(0.01);
+        m_xPID.setTolerance(Constants.kAlignmentXTolerance);
+        m_yPID.setTolerance(Constants.kAlignmentYTolerance);
+        m_rotPID.setTolerance(Constants.kAlignmentRotTolerance);
 
         // Integral is only used within +- 12.5 degrees of the target, with -0.1 to 0.1 max influence.
-        m_rotPID.setIZone(Units.degreesToRadians(12.5));
-        m_rotPID.setIntegratorRange(-0.075, 0.075);
+        m_rotPID.setIZone(Units.degreesToRadians(Constants.kAlignmentRotIZone));
+        m_rotPID.setIntegratorRange(-Constants.kAlignmentRotIntegrationZone, Constants.kAlignmentRotIntegrationZone);
 
         if (output) addRequirements(drivetrain);
+
+        prefix = "AT_" + yOffset;
 
         //System.out.println("+ApriltagAlignment command");
 
@@ -108,20 +110,13 @@ public class ApriltagAlignment extends Command {
 
             if (m_output) m_drivetrain.driveRobotSpeeds(m_desiredChassisSpeeds);
 
-            // if (m_output) m_drivetrain.driveFieldSpeeds(
-            //     ChassisSpeeds.fromRobotRelativeSpeeds(
-            //         m_desiredChassisSpeeds,
-            //         target.bestCameraToTarget.getRotation().toRotation2d().rotateBy(new Rotation2d(Math.PI))
-            //     )
-            // );
-
-            SmartDashboard.putNumber("AT_XError", m_xPID.getError());
-            SmartDashboard.putNumber("AT_YError", m_yPID.getError());
-            SmartDashboard.putNumber("AT_RotError", m_rotPID.getError());
-            SmartDashboard.putNumber("AT_DesiredVx", m_desiredChassisSpeeds.vxMetersPerSecond);
-            SmartDashboard.putNumber("AT_DesiredVy", m_desiredChassisSpeeds.vyMetersPerSecond);
-            SmartDashboard.putNumber("AT_DesiredRot", m_desiredChassisSpeeds.omegaRadiansPerSecond);
-            SmartDashboard.putNumber("AT_counter", m_counter);
+            SmartDashboard.putNumber(prefix + "_XError", m_xPID.getError());
+            SmartDashboard.putNumber(prefix + "_YError", m_yPID.getError());
+            SmartDashboard.putNumber(prefix + "_RotError", m_rotPID.getError());
+            SmartDashboard.putBoolean(prefix + "_atX", m_xPID.atSetpoint());
+            SmartDashboard.putBoolean(prefix + "_atY", m_yPID.atSetpoint());
+            SmartDashboard.putBoolean(prefix + "_atRot", m_rotPID.atSetpoint());
+            SmartDashboard.putNumber(prefix + "_counter", m_counter);
             m_counter++;
         }
     }

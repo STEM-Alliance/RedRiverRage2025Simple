@@ -8,6 +8,7 @@ import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.util.Units;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide
@@ -156,6 +157,15 @@ public final class Constants {
     static public double kAlignYDistanceLeft = -0.24;
     static public double kAlignXDistanceRight = 0.41;
     static public double kAlignYDistanceRight = 0.14;
+
+    /********************************************
+     * Alignment settings
+     *******************************************/
+    static public double kAlignmentXTolerance = 0.01;
+    static public double kAlignmentYTolerance = 0.01;
+    static public double kAlignmentRotTolerance= 0.01;
+    static public double kAlignmentRotIZone = Units.degreesToRadians(12.5);
+    static public double kAlignmentRotIntegrationZone = 0.1;
 
     /********************************************
      * Motor Current Limits
