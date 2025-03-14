@@ -102,7 +102,7 @@ public final class Constants {
      *******************************************/
     static public double kElevatorKp = 0.3;
     static public enum kElevatorSetpoints {
-        L4      (57),
+        L4      (56),
         L3      (32),
         L2      (18),
         L1      (5),
@@ -119,21 +119,22 @@ public final class Constants {
         public double getAsDouble() {return m_elevatorSetpoint;}
     }
 
-    static public double kShooterKp = 3.0;
+    static public double kShooterKp = 10.0;
+    static public double kShooterKi = 10.0;
     static public enum kShooterSetpoints {
-        CLIMB      (0.82),
-        INITIAL    (0.3638),
-        L4_2       (0.7),
-        L4_1       (0.7),
-        L3_2       (0.72),
-        L3_1       (0.72),
-        L2_2       (0.72), 
-        L2_1       (0.72), 
-        L1_2       (0.72),
-        L1_1       (0.72),
-        INTAKE2    (0.35),
-        INTAKE1    (0.72),
-        IDLE       (0.534); 
+        CLIMB      (0.62 - 0.04),
+        INITIAL    (0.515 - 0.04), //0.3638
+        L4_2       (0.22 - 0),
+        L4_1       (0.22 - 0),
+        L3_2       (0.22 - 0.04),
+        L3_1       (0.22 - 0.04),
+        L2_2       (0.22 - 0.04), 
+        L2_1       (0.22 - 0.04), 
+        L1_2       (0.22 - 0.04),
+        L1_1       (0.22 - 0.04),
+        INTAKE2    (0.525 - 0.04),
+        INTAKE1    (0.205 - 0.04),
+        IDLE       (0.381 - 0.04); //0.534
 
         private final double m_shooterSetpoints;
 

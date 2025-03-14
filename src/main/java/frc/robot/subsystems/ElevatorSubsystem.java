@@ -3,6 +3,9 @@ package frc.robot.subsystems;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
+
+import static frc.robot.Constants.kShooterKi;
+
 import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkMax;
@@ -40,7 +43,7 @@ public class ElevatorSubsystem extends SubsystemBase {
 
     private double m_shooterSetpoint = 0.0;
     private final ProfiledPIDController m_shooterPID = new ProfiledPIDController(
-        Constants.kShooterKp, 0.0, 0.0, new TrapezoidProfile.Constraints(Constants.kShooterMaxVelocity, Constants.kShooterMaxVelocity)
+        Constants.kShooterKp, Constants.kShooterKi, 0.0, new TrapezoidProfile.Constraints(Constants.kShooterMaxVelocity, Constants.kShooterMaxVelocity)
     );
 
     //private final IntakeSubsystem m_intake = new IntakeSubsystem(11, 0);
@@ -51,14 +54,14 @@ public class ElevatorSubsystem extends SubsystemBase {
         m_elevatorEncoder = m_elevatorMotor.getEncoder();
         m_elevatorEncoder.setPosition(0.0);
 
-        m_shooterMotor = new SparkMax(shooterMotorID, MotorType.kBrushless);
+        m_shooterMotor = new SparkMax(shooterMotorID, MotorType.kBrushed);
         m_shooterMotor.getEncoder().setPosition(0.0);
 
         m_elevatorPID.setIZone(0.0);
         m_elevatorPID.setIntegratorRange(0.0, 0.0);
 
-        m_shooterPID.setIZone(0.0);
-        m_shooterPID.setIntegratorRange(0.0, 0.0);
+        m_shooterPID.setIZone(0.1);
+        m_shooterPID.setIntegratorRange(-0.5, 0.5);
 
         SparkMaxConfig elevatorConfig = new SparkMaxConfig();
         SparkMaxConfig shooterConfig = new SparkMaxConfig();
@@ -75,7 +78,7 @@ public class ElevatorSubsystem extends SubsystemBase {
         
         shooterConfig
             .idleMode(IdleMode.kBrake)
-            .smartCurrentLimit(Constants.Neo550Limit);
+            .smartCurrentLimit(Constants.WindowLimit);
         shooterConfig.encoder
             .positionConversionFactor(1.0)
             .velocityConversionFactor(1.0);
@@ -157,7 +160,7 @@ public class ElevatorSubsystem extends SubsystemBase {
 
     private final void shooterControlLoop() {
         SmartDashboard.putData("ShooterPID", m_shooterPID);
-        double shooterOutput = MathUtil.clamp(m_shooterPID.calculate(m_intakePos.getPosition()), -0.125, 0.125);
+        double shooterOutput = MathUtil.clamp(-m_shooterPID.calculate(m_intakePos.getPosition()), -0.8, 0.8);
         SmartDashboard.putNumber("ShooterOutput", shooterOutput);
 
         DataLogHelpers.logDouble(shooterOutput, "ElevatorSubsystem/Shooter PID Output");

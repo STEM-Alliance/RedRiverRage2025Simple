@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 5.8305,
-        "y": 2.2602499999999988
+        "x": 5.733,
+        "y": 1.9969999999999992
       },
       "prevControl": null,
       "nextControl": {
-        "x": 4.951054738313732,
-        "y": 1.9414064604982295
+        "x": 4.853554738313732,
+        "y": 1.67815646049823
       },
       "isLocked": false,
       "linkedName": "Drive Out RT End"
