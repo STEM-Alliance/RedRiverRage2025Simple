@@ -125,8 +125,8 @@ public final class Constants {
     static public enum kShooterSetpoints {
         CLIMB      (0.52),
         INITIAL    (0.652), //0.3638
-        L4_2       (0.62),
-        L4_1       (0.62),
+        L4_2       (0.64),
+        L4_1       (0.64),
         L3_2       (0.62),
         L3_1       (0.62),
         L2_2       (0.62), 
