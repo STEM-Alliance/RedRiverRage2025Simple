@@ -15,12 +15,6 @@
           "data": {
             "commands": [
               {
-                "type": "named",
-                "data": {
-                  "name": "AlignLeftOffset"
-                }
-              },
-              {
                 "type": "sequential",
                 "data": {
                   "commands": [
@@ -34,6 +28,25 @@
                       "type": "named",
                       "data": {
                         "name": "SetState L4"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "type": "race",
+                "data": {
+                  "commands": [
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "AlignLeftOffset"
+                      }
+                    },
+                    {
+                      "type": "wait",
+                      "data": {
+                        "waitTime": 2.5
                       }
                     }
                   ]
@@ -109,12 +122,6 @@
           "data": {
             "commands": [
               {
-                "type": "named",
-                "data": {
-                  "name": "AlignLeftOffset"
-                }
-              },
-              {
                 "type": "sequential",
                 "data": {
                   "commands": [
@@ -128,6 +135,25 @@
                       "type": "named",
                       "data": {
                         "name": "SetState L4"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "type": "race",
+                "data": {
+                  "commands": [
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "AlignLeftOffset"
+                      }
+                    },
+                    {
+                      "type": "wait",
+                      "data": {
+                        "waitTime": 2.5
                       }
                     }
                   ]
