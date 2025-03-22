@@ -123,27 +123,33 @@ public final class Constants {
     static public double kShooterKp = 15.0;
     static public double kShooterKi = 1.0;
     static public enum kShooterSetpoints {
-        CLIMB      (0.52),
-        INITIAL    (0.652), //0.3638
-        L4_2       (0.64),
-        L4_1       (0.64),
-        L3_2       (0.62),
-        L3_1       (0.62),
-        L2_2       (0.62), 
-        L2_1       (0.62), 
-        L1_2       (0.62),
-        L1_1       (0.62),
-        INTAKE2    (0.948 + 0.015),
-        INTAKE1    (0.615 - 0.015),
-        IDLE       (0.796); //0.534
+        CLIMB,
+        INITIAL,
+        L4,
+        L123,
+        INTAKE,
+        IDLE;
+        // CLIMB      (0.52),
+        // INITIAL    (0.652), //0.3638
+        // L4_2       (0.94), //45
+        // L4_1       (0.64),
+        // L3_2       (0.96),
+        // L3_1       (0.62),
+        // L2_2       (0.96), 
+        // L2_1       (0.62), 
+        // L1_2       (0.96),
+        // L1_1       (0.62),
+        // INTAKE2    (0.948 + 0.015),
+        // INTAKE1    (0.615 - 0.015),
+        // IDLE       (0.796); //0.534
 
-        private final double m_shooterSetpoints;
+        // private final double m_shooterSetpoints;
 
-        kShooterSetpoints(double shooterSetpoint) {
-            m_shooterSetpoints = shooterSetpoint;
-        }
+        // kShooterSetpoints(double shooterSetpoint) {
+        //     m_shooterSetpoints = shooterSetpoint;
+        // }
 
-        public double getAsDouble() {return m_shooterSetpoints;}
+        // public double getAsDouble() {return m_shooterSetpoints;}
     }
 
     static public double kElevatorMaxVelocity = 50;
@@ -153,9 +159,9 @@ public final class Constants {
 
     static public int kRumbleTimer = 100;
 
-    static public double kAlignXDistanceLeft = 0.41;
+    static public double kAlignXDistanceLeft = 0.44; // 0.41
     static public double kAlignYDistanceLeft = -0.24;
-    static public double kAlignXDistanceRight = 0.41;
+    static public double kAlignXDistanceRight = 0.44;
     static public double kAlignYDistanceRight = 0.14;
 
     /********************************************

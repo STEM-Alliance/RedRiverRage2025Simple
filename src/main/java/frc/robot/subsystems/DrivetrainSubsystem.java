@@ -414,37 +414,29 @@ public class DrivetrainSubsystem extends SubsystemBase {
   }
 
   // Idea Graciously and Professionally borrowed from FRC 6328 Mechanical Advantage's AdvantageKit.
-  public final Command calculateWheelDiameters(CommandXboxController controller, Trigger finishButton) {
-    ChassisSpeeds desiredChassisSpeeds = new ChassisSpeeds(0.0, 0.0, kMaxAngularSpeed / 6.0);
-
-    return new FunctionalCommand(
-      () -> driveRobotSpeeds(desiredChassisSpeeds),
-      () -> driveRobotSpeeds(desiredChassisSpeeds),
-      interrupted -> {},
-      () -> finishButton.getAsBoolean(),
-      this
-    ).andThen(
-      new InstantCommand(() -> {
-        double gyroRate = m_pigeon2.getAngularVelocityZWorld().getValueAsDouble() * (Math.PI / 180.0);
+  public final Command calculateWheelDiameters(CommandXboxController controller) {
+    return new RunCommand(
+      () -> {
+        double gyroRate = m_pigeon2.getAngularVelocityZDevice().getValueAsDouble() * (Math.PI / 180.0);
         double drivetrainRadius = kSwerveTranslations[0].getNorm();
         double averageWheelVelocity = 0.0;
 
         for (SwerveModule module : m_modules) {
-          // This gets the velocity of the drive motor without accounting for the radius of the wheel.
           averageWheelVelocity += module.getDriveMotor()
             .getVelocity().getValueAsDouble() * (2.0 * Math.PI / kDriveGearReduction / 60.0);
         }
 
         averageWheelVelocity /= m_modules.length;
-
-        System.out.println("Measured wheel radius (m): " + averageWheelVelocity / (gyroRate * drivetrainRadius));
-      })
+        SmartDashboard.putNumber("MeasuredWheelRadius",
+          averageWheelVelocity / (gyroRate * drivetrainRadius)
+        );
+      }
     );
   }
 
   public final Command setYawToPose() {
     return new InstantCommand(() -> {
-      m_pigeon2.setYaw(m_poseEstimator.getEstimatedPosition().getRotation().getDegrees());
+      m_pigeon2.setYaw(m_poseEstimator.getEstimatedPosition().getRotation().unaryMinus().getDegrees());
     });
   }
 

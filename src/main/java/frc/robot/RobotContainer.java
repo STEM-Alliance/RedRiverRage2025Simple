@@ -10,6 +10,7 @@ import org.photonvision.PhotonCamera;
 
 import frc.robot.Constants.kElevatorSetpoints;
 import frc.robot.Constants.kShooterSetpoints;
+import frc.robot.commands.AlignToReefCommand;
 import frc.robot.commands.ApriltagAlignment;
 import frc.robot.commands.ApriltagOverride;
 import frc.robot.commands.DriveForwardMeters;
@@ -59,8 +60,8 @@ public class RobotContainer {
   private final CommandXboxController m_driverController = new CommandXboxController(kDriverControllerPort);
   private final CommandJoystick m_operatorButtonPanel = new CommandJoystick(kOperatorButtonPanelPort);
 
-  private final ElevatorSubsystem m_elevator = new ElevatorSubsystem(12, 10);
   private final DrivetrainSubsystem m_drivetrain = new DrivetrainSubsystem(m_field);
+  private final ElevatorSubsystem m_elevator = new ElevatorSubsystem(12, 10, m_drivetrain::getPose);
 
   private final ClimbSubsystem m_climb = new ClimbSubsystem(15, 14, 13, 12);
   private final IntakeSubsystem m_intake = new IntakeSubsystem(16, 1, 0, m_driverController);
@@ -109,9 +110,10 @@ public class RobotContainer {
 
   private final void configureControllers() {
     m_driverController.button(7).onTrue(m_elevator.setState(kElevatorSetpoints.IDLE, kShooterSetpoints.INITIAL));
-    //m_driverController.b().whileTrue(m_drivetrain.driveStraight(1.0, true));
+    //m_driverController.a()
+    m_driverController.b().whileTrue(new AlignToReefCommand(kAlignXDistanceLeft, kAlignYDistanceLeft, m_drivetrain)); // test
     m_driverController.x().onTrue(m_drivetrain.resetGyro());
-    //m_driverController.y().onTrue(m_drivetrain.calculateWheelDiameters(m_driverController, m_driverController.povUp()));
+    m_driverController.y().whileTrue(m_drivetrain.calculateWheelDiameters(m_driverController)); // test
 
     m_driverController.leftBumper().onTrue(m_climb.toggleClimber().alongWith(m_elevator.setState(kElevatorSetpoints.CLIMB, kShooterSetpoints.CLIMB)).alongWith(m_drivetrain.toggleClimbSpeed()).alongWith(new InstantCommand(() -> {
       Elastic.selectTab("Climb");
@@ -132,8 +134,12 @@ public class RobotContainer {
     //   .andThen(new DriveForwardMeters(1.45, m_drivetrain))));
     // m_driverController.leftTrigger().whileTrue(new ApriltagAlignment(-1, Constants.kAlignXDistance, Constants.kAlignYDistanceLeft, m_cameras, m_drivetrain, true).andThen(new DriveForwardMeters(1.45, m_drivetrain)));
     // m_driverController.rightTrigger().whileTrue(new ApriltagAlignment(-1, Constants.kAlignXDistance, Constants.kAlignYDistanceRight, m_cameras, m_drivetrain, true).andThen(new DriveForwardMeters(1.45, m_drivetrain)));
-    m_driverController.leftTrigger().whileTrue(new ApriltagAlignment(-1, Constants.kAlignXDistanceLeft, Constants.kAlignYDistanceLeft, m_cameras, m_drivetrain, true));
-    m_driverController.rightTrigger().whileTrue(new ApriltagAlignment(-1, Constants.kAlignXDistanceRight, Constants.kAlignYDistanceRight, m_cameras, m_drivetrain, true));
+
+    //m_driverController.leftTrigger().whileTrue(new ApriltagAlignment(-1, Constants.kAlignXDistanceLeft, Constants.kAlignYDistanceLeft, m_cameras, m_drivetrain, true));
+    //m_driverController.rightTrigger().whileTrue(new ApriltagAlignment(-1, Constants.kAlignXDistanceRight, Constants.kAlignYDistanceRight, m_cameras, m_drivetrain, true));
+
+    m_driverController.leftTrigger().whileTrue(new AlignToReefCommand(kAlignXDistanceLeft, kAlignYDistanceLeft, m_drivetrain));
+    m_driverController.rightTrigger().whileTrue(new AlignToReefCommand(kAlignXDistanceRight, kAlignYDistanceRight, m_drivetrain));
 
     //m_driverController.leftBumper().whileTrue(m_elevator.cw());
     //m_driverController.rightBumper().whileTrue(m_elevator.ccw());
@@ -154,26 +160,26 @@ public class RobotContainer {
 
     m_operatorButtonPanel.button(1).onTrue(m_elevator.setState(
       kElevatorSetpoints.L1,
-      kShooterSetpoints.L1_1
+      kShooterSetpoints.L123
     )).onFalse(m_elevator.setStateIdle());
 
     m_operatorButtonPanel.button(2).onTrue(m_elevator.setState(
       kElevatorSetpoints.L2,
-      kShooterSetpoints.L2_1
+      kShooterSetpoints.L123
     )).onFalse(m_elevator.setStateIdle());
 
     m_operatorButtonPanel.button(3).onTrue(m_elevator.setState(
       kElevatorSetpoints.L3,
-      kShooterSetpoints.L3_1
+      kShooterSetpoints.L123
     )).onFalse(m_elevator.setStateIdle());
 
     m_operatorButtonPanel.button(4).onTrue(m_elevator.setState(
       kElevatorSetpoints.L4,
-      kShooterSetpoints.L4_1
+      kShooterSetpoints.L4
     )).onFalse(m_elevator.setStateIdle());
 
-    m_operatorButtonPanel.button(6).onTrue(m_intake.startIntaking().alongWith(m_elevator.setState(kElevatorSetpoints.INTAKE, kShooterSetpoints.INTAKE1)))
-      .onFalse(m_intake.stopIntaking().alongWith(m_elevator.setState(kElevatorSetpoints.IDLE, kShooterSetpoints.IDLE)));
+    m_operatorButtonPanel.button(6).onTrue(m_intake.startIntaking().alongWith(m_elevator.setState(kElevatorSetpoints.INTAKE, kShooterSetpoints.INTAKE)))
+      .onFalse(m_intake.stopIntaking().alongWith(m_elevator.setStateIdle()));
     
     m_operatorButtonPanel.button(5).onTrue(m_intake.startShooting())
       .onFalse(m_intake.stopShooting());
@@ -181,8 +187,8 @@ public class RobotContainer {
     m_operatorButtonPanel.button(8).whileTrue(m_elevator.zeroHeight())
       .onFalse(m_elevator.emergencyStop());
     
-      m_operatorButtonPanel.button(7).onTrue(m_intake.startIntaking().alongWith(m_elevator.setState(kElevatorSetpoints.INTAKE, kShooterSetpoints.INTAKE2)))
-      .onFalse(m_intake.stopIntaking().alongWith(m_elevator.setState(kElevatorSetpoints.IDLE, kShooterSetpoints.IDLE)));
+      m_operatorButtonPanel.button(7).onTrue(m_intake.startIntaking().alongWith(m_elevator.setState(kElevatorSetpoints.INTAKE, kShooterSetpoints.INTAKE)))
+      .onFalse(m_intake.stopIntaking().alongWith(m_elevator.setStateIdle()));
 
     // m_operatorButtonPanel.button(4).onTrue(m_elevator.setState(
     //   kElevatorSetpoints.L3,
@@ -259,13 +265,13 @@ public class RobotContainer {
     NamedCommands.registerCommand("DriveForwardMeters", new DriveForwardMeters(1.55, m_drivetrain));
     NamedCommands.registerCommand("Stop", stopAuto());
 
-    NamedCommands.registerCommand("SetState L4", m_elevator.setState(kElevatorSetpoints.L4, kShooterSetpoints.L4_1)
+    NamedCommands.registerCommand("SetState L4", m_elevator.setState(kElevatorSetpoints.L4, kShooterSetpoints.L4)
       .alongWith(m_elevator.atSetpoints()));
     NamedCommands.registerCommand("Shoot 3 Sec", m_intake.startShooting().andThen(new WaitCommand(1.0))
       .andThen(m_intake.stopShooting()));
     NamedCommands.registerCommand("SetState IDLE", m_elevator.setState(kElevatorSetpoints.IDLE, kShooterSetpoints.IDLE));
-    NamedCommands.registerCommand("Just SetState INTAKE", m_elevator.setState(kElevatorSetpoints.INTAKE, kShooterSetpoints.INTAKE1));
-    NamedCommands.registerCommand("SetState INTAKE", m_elevator.setState(kElevatorSetpoints.INTAKE, kShooterSetpoints.INTAKE1).andThen(m_intake.startIntaking())
+    NamedCommands.registerCommand("Just SetState INTAKE", m_elevator.setState(kElevatorSetpoints.INTAKE, kShooterSetpoints.INTAKE));
+    NamedCommands.registerCommand("SetState INTAKE", m_elevator.setState(kElevatorSetpoints.INTAKE, kShooterSetpoints.INTAKE).andThen(m_intake.startIntaking())
       .andThen(m_elevator.setState(kElevatorSetpoints.IDLE, kShooterSetpoints.IDLE)));
 
     NamedCommands.registerCommand("Shoot", m_intake.startShooting().until(new Trigger(m_intake::isIntakeNotLoaded)));

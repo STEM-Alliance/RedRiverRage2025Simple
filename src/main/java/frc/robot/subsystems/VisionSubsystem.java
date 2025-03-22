@@ -43,6 +43,8 @@ import frc.robot.Robot;
 
 import java.util.List;
 import java.util.Optional;
+
+import org.opencv.core.Mat.Tuple2;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
@@ -58,6 +60,8 @@ public class VisionSubsystem extends SubsystemBase {
     private final PhotonPoseEstimator photonEstimator;
     private final SwerveDrivePoseEstimator m_swervePoseEstimator;
     private Matrix<N3, N1> curStdDevs;
+    private int m_closestTagId = -1;
+    private double m_closestTagArea = -1;
 
     private final AprilTagFieldLayout m_apriltagLayout = AprilTagFieldLayout.loadField(
         AprilTagFields.k2025ReefscapeWelded
@@ -107,12 +111,10 @@ public class VisionSubsystem extends SubsystemBase {
         Optional<EstimatedRobotPose> estimatedPose = getEstimatedGlobalPose();
 
         if (estimatedPose.isPresent()) {
-            // Do the two cameras override each other or are they always done in sequence?
-            m_swervePoseEstimator.setVisionMeasurementStdDevs(getEstimationStdDevs());
-
             m_swervePoseEstimator.addVisionMeasurement(
                 estimatedPose.get().estimatedPose.toPose2d(),
-                estimatedPose.get().timestampSeconds
+                estimatedPose.get().timestampSeconds,
+                getEstimationStdDevs()
             );
         }
     }
@@ -129,7 +131,9 @@ public class VisionSubsystem extends SubsystemBase {
      */
     public Optional<EstimatedRobotPose> getEstimatedGlobalPose() {
         Optional<EstimatedRobotPose> visionEst = Optional.empty();
-        for (var change : camera.getAllUnreadResults()) {
+        var tags = camera.getAllUnreadResults();
+        updateClosestTag(tags);
+        for (var change : tags) {
             visionEst = photonEstimator.update(change);
             updateEstimationStdDevs(visionEst, change.getTargets());
 
@@ -148,6 +152,36 @@ public class VisionSubsystem extends SubsystemBase {
     }
 
     /**
+     * Update the last tag that was seen as it's position
+     */
+    public void updateClosestTag(List<PhotonPipelineResult> pipelines)
+    {
+        // m_closestTagId = -1;
+        // m_closestTagArea = -1;
+        for (var pipeline : pipelines)
+        {
+            for (var tag : pipeline.getTargets())
+            {
+                if (tag.area > m_closestTagArea)
+                {
+                    m_closestTagArea = tag.area;
+                    m_closestTagId = tag.fiducialId;
+                }
+            }
+        }
+    }
+
+    public int getClosestTagId()
+    {
+        return m_closestTagId;
+    }
+
+    public double getClosestTagArea()
+    {
+        return m_closestTagArea;
+    }
+
+    /**
      * Calculates new standard deviations This algorithm is a heuristic that creates dynamic standard
      * deviations based on number of tags, estimation strategy, and distance from the tags.
      *
@@ -158,11 +192,11 @@ public class VisionSubsystem extends SubsystemBase {
             Optional<EstimatedRobotPose> estimatedPose, List<PhotonTrackedTarget> targets) {
         if (estimatedPose.isEmpty()) {
             // No pose input. Default to single-tag std devs
-            curStdDevs = VecBuilder.fill(6, 6, 12); // default 4, 4, 8
+            curStdDevs = VecBuilder.fill(7.5, 7.5, 12); // default 4, 4, 8
 
         } else {
             // Pose present. Start running Heuristic
-            var estStdDevs = VecBuilder.fill(6, 6, 12);
+            var estStdDevs = VecBuilder.fill(2.5, 2.5, 5.0);
             int numTags = 0;
             double avgDist = 0;
 
@@ -181,16 +215,16 @@ public class VisionSubsystem extends SubsystemBase {
 
             if (numTags == 0) {
                 // No tags visible. Default to single-tag std devs
-                curStdDevs = VecBuilder.fill(6, 6, 12); // single standard devs
+                curStdDevs = VecBuilder.fill(7.5, 7.5, 12); // single standard devs
             } else {
                 // One or more tags visible, run the full heuristic.
                 avgDist /= numTags;
                 // Decrease std devs if multiple targets are visible
-                if (numTags > 1) estStdDevs = VecBuilder.fill(0.5, 0.5, 1); // multi standard devs
+                if (numTags > 1) estStdDevs = VecBuilder.fill(1.0, 1.0, 2.5); // multi standard devs
                 // Increase std devs based on (average) distance
                 if (numTags == 1 && avgDist > 4)
                     estStdDevs = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE);
-                else estStdDevs = estStdDevs.times(1 + (avgDist * avgDist / 25.0)); // / 30
+                else estStdDevs = estStdDevs.times(1 + (avgDist * avgDist / 17.5)); // / 30
                 curStdDevs = estStdDevs;
             }
         }

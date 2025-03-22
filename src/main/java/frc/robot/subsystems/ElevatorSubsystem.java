@@ -6,6 +6,8 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 
 import static frc.robot.Constants.kShooterKi;
 
+import java.util.function.Supplier;
+
 import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkMax;
@@ -14,6 +16,8 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -27,6 +31,7 @@ import frc.robot.Constants;
 import frc.robot.Constants.kElevatorSetpoints;
 import frc.robot.Constants.kShooterSetpoints;
 import frc.robot.util.DataLogHelpers;
+import frc.robot.util.AprilTagFieldHelpers;
 
 public class ElevatorSubsystem extends SubsystemBase {
     private final SparkMax m_elevatorMotor;
@@ -35,6 +40,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     private final DigitalInput m_limitHigh = new DigitalInput(0);
     private final DigitalInput m_limitLow = new DigitalInput(3);
     private final AbsoluteEncoder m_intakePos;
+    private final Supplier<Pose2d> m_getPoseSupplier;
 
     private double m_elevatorSetpoint = 0.0;
     private final ProfiledPIDController m_elevatorPID = new ProfiledPIDController(
@@ -46,10 +52,19 @@ public class ElevatorSubsystem extends SubsystemBase {
         Constants.kShooterKp, Constants.kShooterKi, 0.0, new TrapezoidProfile.Constraints(Constants.kShooterMaxVelocity, Constants.kShooterMaxVelocity)
     );
 
+    // For double[]s, the first value is facing towards, the second value is facing away.
+    private static final double m_climbSetpoint = 0.52;
+    private static final double m_initialSetpoint = 0.652;
+    private static final double[] m_l4Setpoints = new double[]{0.64, 0.94};
+    private static final double[] m_l123Setpoints = new double[]{0.62, 0.96};
+    private static final double[] m_intakeSetpoints = new double[]{0.6, 0.963};
+    private static final double m_idleSetpoint = 0.796;
+
     //private final IntakeSubsystem m_intake = new IntakeSubsystem(11, 0);
     // dio 1 and 3
 
-    public ElevatorSubsystem(int elevatorMotorID, int shooterMotorID) {
+    public ElevatorSubsystem(int elevatorMotorID, int shooterMotorID, Supplier<Pose2d> getPoseSupplier) {
+        m_getPoseSupplier = getPoseSupplier;
         m_elevatorMotor = new SparkMax(elevatorMotorID, MotorType.kBrushless);
         m_elevatorEncoder = m_elevatorMotor.getEncoder();
         m_elevatorEncoder.setPosition(0.0);
@@ -90,7 +105,7 @@ public class ElevatorSubsystem extends SubsystemBase {
         m_shooterMotor.configure(shooterConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
         m_intakePos = m_shooterMotor.getAbsoluteEncoder();
-        setShooterSetpoint(kShooterSetpoints.IDLE.getAsDouble());
+        setShooterSetpoint(kShooterSetpoints.IDLE);
 
         m_elevatorPID.setTolerance(0.5);
         m_shooterPID.setTolerance(0.025);
@@ -116,12 +131,12 @@ public class ElevatorSubsystem extends SubsystemBase {
         );
     }
 
-    public final void setElevatorSetpoint(double setpoint) {
-        m_elevatorSetpoint = MathUtil.clamp(setpoint, 0.0, kElevatorSetpoints.L4.getAsDouble());
+    public final void setElevatorSetpoint(kElevatorSetpoints setpoint) {
+        m_elevatorSetpoint = setpoint.getAsDouble();
         m_elevatorPID.setGoal(m_elevatorSetpoint);
     }
 
-    public final Command setElevatorSetpointCommand(double setpoint) {
+    public final Command setElevatorSetpointCommand(kElevatorSetpoints setpoint) {
         return new InstantCommand(() -> {setElevatorSetpoint(setpoint);});
     }
 
@@ -149,12 +164,62 @@ public class ElevatorSubsystem extends SubsystemBase {
         }
     }
 
-    public final void setShooterSetpoint(double setpoint) {
-        m_shooterSetpoint = MathUtil.clamp(setpoint, -1, 1);
+    public final void setShooterSetpoint(kShooterSetpoints setpoint) {
+        Pose2d currentPose = m_getPoseSupplier.get();
+        Pose2d nearestTagPose = AprilTagFieldHelpers.getNearestAprilTag(currentPose);
+
+        double rotationDifference = currentPose.getRotation().minus(nearestTagPose.getRotation()).getDegrees();
+        // from -90 to -180 (wraps) and from 180 to 90, it shouldn't invert.
+        // from -90 to 90 (continous), it should invert.
+
+        int i;
+
+        if (
+            ((-90 > rotationDifference) && (rotationDifference > -180)) ||
+            ((180 > rotationDifference) && (rotationDifference > 90))
+        ) {
+            i = 0;
+        }
+
+        else {
+            i = 1;
+        }
+
+        switch (setpoint) {
+            case CLIMB:
+                m_shooterSetpoint = m_climbSetpoint;
+                break;
+
+            case INITIAL:
+                m_shooterSetpoint = m_initialSetpoint;
+                break;
+
+            case L4:
+                m_shooterSetpoint = m_l4Setpoints[i];
+                break;
+
+            case L123:
+                m_shooterSetpoint = m_l123Setpoints[i];
+                break;
+
+            case INTAKE:
+                m_shooterSetpoint = m_intakeSetpoints[i];
+                break;
+
+            case IDLE:
+                m_shooterSetpoint = m_idleSetpoint;
+                break;
+
+            default:
+                break;
+        }
+
+        SmartDashboard.putBoolean("ShooterFlipped", i == 1);
+
         m_shooterPID.setGoal(m_shooterSetpoint);
     }
 
-    public final Command setShooterSetpointCommand(double setpoint) {
+    public final Command setShooterSetpointCommand(kShooterSetpoints setpoint) {
         return new InstantCommand(() -> {setShooterSetpoint(setpoint);});
     }
 
@@ -174,8 +239,8 @@ public class ElevatorSubsystem extends SubsystemBase {
         kShooterSetpoints shooterSetpoint
     ) {
         return new InstantCommand(() -> {
-            if (elevatorSetpoint != null) setElevatorSetpoint(elevatorSetpoint.getAsDouble());
-            if (shooterSetpoint != null) setShooterSetpoint(shooterSetpoint.getAsDouble());
+            if (elevatorSetpoint != null) setElevatorSetpoint(elevatorSetpoint);
+            if (shooterSetpoint != null) setShooterSetpoint(shooterSetpoint);
         });
     }
 
@@ -226,14 +291,14 @@ public class ElevatorSubsystem extends SubsystemBase {
 
     public final Command cw() {
         return new FunctionalCommand(() -> {}, 
-                                     ()->{m_shooterMotor.set(0.5);},
+                                     ()->{m_shooterMotor.set(0.3);},
                                      interrupted -> stopRotate(),
                                      ()->false);
     }
 
     public final Command ccw() {
         return new FunctionalCommand(() -> {}, 
-                                     ()->{m_shooterMotor.set(-0.5);},
+                                     ()->{m_shooterMotor.set(-0.3);},
                                      interrupted -> stopRotate(),
                                      ()->false);
     }
