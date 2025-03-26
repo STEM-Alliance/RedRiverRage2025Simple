@@ -12,6 +12,7 @@ import java.util.Optional;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -19,6 +20,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.MutDistance;
@@ -99,7 +101,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
     m_kinematics,
     m_pigeon2.getRotation2d(),
     getModulePositions(),
-    new Pose2d()
+    Pose2d.kZero
   );
 
   public SwerveDrivePoseEstimator getPoseEstimator() {
@@ -260,7 +262,9 @@ public class DrivetrainSubsystem extends SubsystemBase {
             ChassisSpeeds.discretize(
                 fieldRelative
                     ? ChassisSpeeds.fromFieldRelativeSpeeds(
-                        xSpeed, ySpeed, rot, m_pigeon2.getRotation2d())
+                        xSpeed, ySpeed, rot,
+                        //TODO: Test in einseins
+                        (DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Red ? m_poseEstimator.getEstimatedPosition().getRotation().unaryMinus() : m_poseEstimator.getEstimatedPosition().getRotation()))
                     : new ChassisSpeeds(xSpeed, ySpeed, rot),
                 periodSeconds));
     SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, Constants.kMaxSpeed);
@@ -299,20 +303,20 @@ public class DrivetrainSubsystem extends SubsystemBase {
     if (DriverStation.isAutonomous()) {
       pathplannerSpeeds = robotSpeeds;
 
-      double maxDriveVelocity = kMaxAutonomousSpeed;//m_robotConfig.moduleConfig.maxDriveVelocityMPS;
-      double maxRotationalVelocity = kMaxAutonomousAngularSpeed;//m_robotConfig.moduleConfig.maxDriveVelocityRadPerSec;
+      double maxDriveVelocity = m_robotConfig.moduleConfig.maxDriveVelocityMPS;
+      double maxRotationalVelocity = m_robotConfig.moduleConfig.maxDriveVelocityRadPerSec;
 
-      robotSpeeds.vxMetersPerSecond = MathUtil.clamp(
-        robotSpeeds.vxMetersPerSecond, -maxDriveVelocity, maxDriveVelocity
-      );
+      // robotSpeeds.vxMetersPerSecond = MathUtil.clamp(
+      //   robotSpeeds.vxMetersPerSecond, -maxDriveVelocity, maxDriveVelocity
+      // );
 
-      robotSpeeds.vyMetersPerSecond = MathUtil.clamp(
-        robotSpeeds.vyMetersPerSecond, -maxDriveVelocity, maxDriveVelocity
-      );
+      // robotSpeeds.vyMetersPerSecond = MathUtil.clamp(
+      //   robotSpeeds.vyMetersPerSecond, -maxDriveVelocity, maxDriveVelocity
+      // );
 
-      robotSpeeds.omegaRadiansPerSecond = MathUtil.clamp(
-        robotSpeeds.omegaRadiansPerSecond, -maxRotationalVelocity, maxRotationalVelocity
-      );
+      // robotSpeeds.omegaRadiansPerSecond = MathUtil.clamp(
+      //   robotSpeeds.omegaRadiansPerSecond, -maxRotationalVelocity, maxRotationalVelocity
+      // );
 
       // SmartDashboard.putNumber("PathplannerVX", robotSpeeds.vxMetersPerSecond);
       // SmartDashboard.putNumber("PathplannerVY", robotSpeeds.vyMetersPerSecond);
@@ -370,7 +374,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
 
   public void resetPose(Pose2d resetPose) {
     //System.out.println("Reset pose to " + resetPose);
-    //m_poseEstimator.resetPosition(m_pigeon2.getRotation2d(), getModulePositions(), resetPose);
+    m_poseEstimator.resetPosition(m_pigeon2.getRotation2d(), getModulePositions(), resetPose);
   }
 
   public void setGyro(double robotHeading) {
@@ -415,29 +419,65 @@ public class DrivetrainSubsystem extends SubsystemBase {
 
   // Idea Graciously and Professionally borrowed from FRC 6328 Mechanical Advantage's AdvantageKit.
   public final Command calculateWheelDiameters(CommandXboxController controller) {
-    return new RunCommand(
+    double initialAverageEncoderDistance = 0.0;
+
+    for (SwerveModule module : m_modules) {
+      initialAverageEncoderDistance += Math.abs(module.getDriveMotor().getPosition().getValueAsDouble());
+    }
+
+    initialAverageEncoderDistance /= m_modules.length;
+
+    SmartDashboard.putNumber("initialAverageEncoderDistance", initialAverageEncoderDistance);
+
+    ProfiledPIDController omegaPID = new ProfiledPIDController(2.0, 0.0, 0.0,
+      new TrapezoidProfile.Constraints(Math.PI / 3.0, Math.PI / 3.0 / 1.5));
+    
+    omegaPID.setGoal(m_pigeon2.getYaw().getValueAsDouble() * Math.PI/180);
+    omegaPID.setTolerance(0.5);
+
+    m_pigeon2.reset();
+
+    return new FunctionalCommand(
+      () -> {},
       () -> {
-        double gyroRate = m_pigeon2.getAngularVelocityZDevice().getValueAsDouble() * (Math.PI / 180.0);
-        double drivetrainRadius = kSwerveTranslations[0].getNorm();
-        double averageWheelVelocity = 0.0;
+        driveFieldSpeeds(new ChassisSpeeds(0.0, 0.0, Math.PI / 6));
+          // MathUtil.clamp(omegaPID.calculate(m_pigeon2.getYaw().getValueAsDouble() * Math.PI/180),
+          //   -Math.PI / 3.0,
+          //   Math.PI / 3.0
+          //)));
+      },
+      interrupted -> {
+        double endingAverageEncoderDistance = 0.0;
 
         for (SwerveModule module : m_modules) {
-          averageWheelVelocity += module.getDriveMotor()
-            .getVelocity().getValueAsDouble() * (2.0 * Math.PI / kDriveGearReduction / 60.0);
+          endingAverageEncoderDistance += Math.abs(module.getDriveMotor().getPosition().getValueAsDouble());
         }
+    
+        endingAverageEncoderDistance /= m_modules.length;
 
-        averageWheelVelocity /= m_modules.length;
-        SmartDashboard.putNumber("MeasuredWheelRadius",
-          averageWheelVelocity / (gyroRate * drivetrainRadius)
-        );
-      }
+        SmartDashboard.putNumber("endingAverageEncoderDistance", endingAverageEncoderDistance);
+        SmartDashboard.putNumber("endingYaw", m_pigeon2.getYaw().getValueAsDouble());
+      },
+      () -> m_pigeon2.getYaw().getValueAsDouble() >= 360,
+      this
     );
-  }
+    // return new RunCommand(
+    //   () -> {
+    //     double gyroRate = m_pigeon2.getAngularVelocityZDevice().getValueAsDouble() * (Math.PI / 180.0);
+    //     double drivetrainRadius = kSwerveTranslations[0].getNorm();
+    //     double averageWheelVelocity = 0.0;
 
-  public final Command setYawToPose() {
-    return new InstantCommand(() -> {
-      m_pigeon2.setYaw(m_poseEstimator.getEstimatedPosition().getRotation().unaryMinus().getDegrees());
-    });
+    //     for (SwerveModule module : m_modules) {
+    //       averageWheelVelocity += module.getDriveMotor()
+    //         .getVelocity().getValueAsDouble() * (2.0 * Math.PI / kDriveGearReduction / 60.0);
+    //     }
+
+    //     averageWheelVelocity /= m_modules.length;
+    //     SmartDashboard.putNumber("MeasuredWheelRadius",
+    //       (gyroRate * drivetrainRadius) / averageWheelVelocity
+    //     );
+    //   }
+    // );
   }
 
   public void setGains(double kp, double ki, double kd, double ks, double kv) {

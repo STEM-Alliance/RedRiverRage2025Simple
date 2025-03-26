@@ -7,13 +7,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Drive Out Left Blue"
+            "pathName": "Choreo A"
           }
         }
       ]
     }
   },
   "resetOdom": true,
-  "folder": "Dev",
-  "choreoAuto": false
+  "folder": null,
+  "choreoAuto": true
 }

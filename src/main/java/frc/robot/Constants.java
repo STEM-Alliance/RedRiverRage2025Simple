@@ -40,7 +40,7 @@ public final class Constants {
 
     // Max speeds
     static public double kMaxSpeed = 5.1; // 5.1 meters per second
-    static public double kMaxAutonomousSpeed = 3; // this ensures that the max speed 2.5
+    static public double kMaxAutonomousSpeed = 5; // this ensures that the max speed 2.5
     // (configured in pathplanne app settings) is never exceeded, should match the pathplanner max.
     static public double kMaxAngularSpeed = 4.0 * Math.PI; // 2 rotations per second 3.5
     static public double kMaxAutonomousAngularSpeed = kMaxAngularSpeed;
@@ -68,13 +68,14 @@ public final class Constants {
     static public double kSwerveKa = 0.0;
 
     public static final PPHolonomicDriveController kPathplannerDriveController = new PPHolonomicDriveController(
-        new PIDConstants(3.5, 0.0, 0.0), // Translation PID constants
+        new PIDConstants(5, 0.0, 0.0), // Translation PID constants
         new PIDConstants(2.25, 0.0, 0.0) // Rotation PID constants
     );
 
     // Swerve Hardware
-    static public double kWheelRadius = 0.04826;
-    static public double kDriveGearReduction = 6.12;
+    static public double kWheelRadius = Units.inchesToMeters(3.89);
+    //static public double kDriveGearReduction = 6.12;
+    static public double kDriveGearReduction = 6.4326; // Yes I know this isn't correct
     static public double kTurningGearReduction = 12.8;
     
     // FL, FR, BL, BR

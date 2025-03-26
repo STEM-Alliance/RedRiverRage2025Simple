@@ -166,7 +166,15 @@ public class ElevatorSubsystem extends SubsystemBase {
 
     public final void setShooterSetpoint(kShooterSetpoints setpoint) {
         Pose2d currentPose = m_getPoseSupplier.get();
-        Pose2d nearestTagPose = AprilTagFieldHelpers.getNearestAprilTag(currentPose);
+        Pose2d nearestTagPose;
+
+        if (setpoint == kShooterSetpoints.INTAKE) {
+            nearestTagPose = AprilTagFieldHelpers.getNearestStationPose(currentPose);
+        }
+
+        else {
+            nearestTagPose = AprilTagFieldHelpers.getNearestReefPose(currentPose);
+        }
 
         double rotationDifference = currentPose.getRotation().minus(nearestTagPose.getRotation()).getDegrees();
         // from -90 to -180 (wraps) and from 180 to 90, it shouldn't invert.

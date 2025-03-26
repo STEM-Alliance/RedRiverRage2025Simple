@@ -110,8 +110,8 @@ public class RobotContainer {
 
   private final void configureControllers() {
     m_driverController.button(7).onTrue(m_elevator.setState(kElevatorSetpoints.IDLE, kShooterSetpoints.INITIAL));
-    //m_driverController.a()
-    m_driverController.b().whileTrue(new AlignToReefCommand(kAlignXDistanceLeft, kAlignYDistanceLeft, m_drivetrain)); // test
+    //m_driverController.a();
+    //m_driverController.b();
     m_driverController.x().onTrue(m_drivetrain.resetGyro());
     m_driverController.y().whileTrue(m_drivetrain.calculateWheelDiameters(m_driverController)); // test
 

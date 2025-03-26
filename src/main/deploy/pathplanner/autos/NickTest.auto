@@ -7,13 +7,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Drive Out Left Blue"
+            "pathName": "NickTest"
           }
         }
       ]
     }
   },
   "resetOdom": true,
-  "folder": "Dev",
+  "folder": null,
   "choreoAuto": false
 }

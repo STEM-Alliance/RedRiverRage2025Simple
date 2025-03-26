@@ -196,7 +196,7 @@ public class VisionSubsystem extends SubsystemBase {
 
         } else {
             // Pose present. Start running Heuristic
-            var estStdDevs = VecBuilder.fill(2.5, 2.5, 5.0);
+            var estStdDevs = VecBuilder.fill(2.5, 2.5, 15.0);
             int numTags = 0;
             double avgDist = 0;
 
@@ -222,9 +222,9 @@ public class VisionSubsystem extends SubsystemBase {
                 // Decrease std devs if multiple targets are visible
                 if (numTags > 1) estStdDevs = VecBuilder.fill(1.0, 1.0, 2.5); // multi standard devs
                 // Increase std devs based on (average) distance
-                if (numTags == 1 && avgDist > 4)
+                if ((numTags == 1  && avgDist > 1.75) || avgDist > 3.0)
                     estStdDevs = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE);
-                else estStdDevs = estStdDevs.times(1 + (avgDist * avgDist / 17.5)); // / 30
+                else estStdDevs = estStdDevs.times(1 + (avgDist * avgDist / 20.0)); // / 30
                 curStdDevs = estStdDevs;
             }
         }

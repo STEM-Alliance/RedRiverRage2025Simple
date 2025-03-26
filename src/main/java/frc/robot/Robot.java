@@ -92,8 +92,6 @@ public class Robot extends TimedRobot {
       m_autonomousCommand.cancel();
     }
 
-    m_robotContainer.getDrivetrain().setYawToPose();
-
     // This logs the controller inputs s  o they can be reviewed for debugging.
     DriverStation.startDataLog(DataLogManager.getLog());
     if (DriverStation.isFMSAttached()) Elastic.selectTab("Teleoperated");
