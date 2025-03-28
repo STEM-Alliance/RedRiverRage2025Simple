@@ -181,6 +181,7 @@ public class SwerveModule {
     DataLogHelpers.logDouble(getDriveEncoderPosition(), "Swerve_drive_pos_" + m_swerveIndex);
     DataLogHelpers.logDouble(getDriveEncoderVelocity(), "Swerve_drive_vel_" + m_swerveIndex);
     SmartDashboard.putNumber("Swerve_drive_enc" + m_swerveIndex, getDriveEncoderPosition());
+    SmartDashboard.putNumber("Swerve_drive_set" + m_swerveIndex, drivePID + driveFF);
   }
 
   public void setGains(double kp, double ki, double kd, double ks, double kv) {

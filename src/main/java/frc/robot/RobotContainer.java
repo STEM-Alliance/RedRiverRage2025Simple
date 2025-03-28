@@ -14,6 +14,7 @@ import frc.robot.commands.AlignToReefCommand;
 import frc.robot.commands.ApriltagAlignment;
 import frc.robot.commands.ApriltagOverride;
 import frc.robot.commands.DriveForwardMeters;
+import frc.robot.commands.DriveToPoseCommand;
 import frc.robot.subsystems.ClimbSubsystem;
 import frc.robot.subsystems.DrivetrainSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
@@ -22,6 +23,7 @@ import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
 import frc.robot.util.Elastic;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -43,6 +45,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
 import com.pathplanner.lib.auto.*;
+import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
@@ -120,6 +123,8 @@ public class RobotContainer {
     })));
 
     m_driverController.rightBumper().onTrue(m_climb.toggleClaw());
+    m_driverController.povUp().whileTrue(new PathPlannerAuto("Choreo Test 3"));
+    m_driverController.povDown().onTrue(new InstantCommand(() -> m_drivetrain.resetPose(Pose2d.kZero)));
 
     m_driverController.pov(90).whileTrue(m_elevator.cw());
     m_driverController.pov(270).whileTrue(m_elevator.ccw());
@@ -138,8 +143,8 @@ public class RobotContainer {
     //m_driverController.leftTrigger().whileTrue(new ApriltagAlignment(-1, Constants.kAlignXDistanceLeft, Constants.kAlignYDistanceLeft, m_cameras, m_drivetrain, true));
     //m_driverController.rightTrigger().whileTrue(new ApriltagAlignment(-1, Constants.kAlignXDistanceRight, Constants.kAlignYDistanceRight, m_cameras, m_drivetrain, true));
 
-    m_driverController.leftTrigger().whileTrue(new AlignToReefCommand(kAlignXDistanceLeft, kAlignYDistanceLeft, m_drivetrain));
-    m_driverController.rightTrigger().whileTrue(new AlignToReefCommand(kAlignXDistanceRight, kAlignYDistanceRight, m_drivetrain));
+    m_driverController.leftTrigger().whileTrue(new DriveToPoseCommand(kAlignXDistanceLeft, kAlignYDistanceLeft, m_drivetrain));
+    m_driverController.rightTrigger().whileTrue(new DriveToPoseCommand(kAlignXDistanceRight, kAlignYDistanceRight, m_drivetrain));
 
     //m_driverController.leftBumper().whileTrue(m_elevator.cw());
     //m_driverController.rightBumper().whileTrue(m_elevator.ccw());
@@ -258,10 +263,10 @@ public class RobotContainer {
   */
   private final void registerPathplannerCommands() {
     NamedCommands.registerCommand("AlignLeftInterrupt", new ApriltagOverride(-1, Constants.kAlignXDistanceLeft, Constants.kAlignYDistanceLeft, m_cameras, null));
-    NamedCommands.registerCommand("AlignLeftOffset", new ApriltagAlignment(-1, Constants.kAlignXDistanceLeft, Constants.kAlignYDistanceLeft, m_cameras, m_drivetrain, true));
+    NamedCommands.registerCommand("AlignLeftOffset", new DriveToPoseCommand(kAlignXDistanceLeft, kAlignYDistanceLeft, m_drivetrain));
 
     NamedCommands.registerCommand("AlignRightInterrupt", new ApriltagOverride(-1, Constants.kAlignXDistanceRight, Constants.kAlignYDistanceRight, m_cameras, null));
-    NamedCommands.registerCommand("AlignRightOffset", new ApriltagAlignment(-1, Constants.kAlignXDistanceRight, Constants.kAlignYDistanceRight, m_cameras, m_drivetrain, true));
+    NamedCommands.registerCommand("AlignRightOffset", new DriveToPoseCommand(kAlignXDistanceRight, kAlignYDistanceRight, m_drivetrain));
     NamedCommands.registerCommand("DriveForwardMeters", new DriveForwardMeters(1.55, m_drivetrain));
     NamedCommands.registerCommand("Stop", stopAuto());
 

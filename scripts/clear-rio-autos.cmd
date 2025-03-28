@@ -1,1 +1,1 @@
-ssh 10.70.48.2 -l "admin" "rm -rf /home/lvuser/deploy/pathplanner"
+ssh admin@10.70.48.2 "rm -rf /home/lvuser/deploy/pathplanner"

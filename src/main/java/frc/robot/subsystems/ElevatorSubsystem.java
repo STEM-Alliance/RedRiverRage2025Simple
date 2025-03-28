@@ -128,7 +128,7 @@ public class ElevatorSubsystem extends SubsystemBase {
         return new RunCommand(
             () -> {elevatorControlLoop(); shooterControlLoop();},
             this
-        );
+        ).withName("ElevatorCmd");
     }
 
     public final void setElevatorSetpoint(kElevatorSetpoints setpoint) {
@@ -317,13 +317,6 @@ public class ElevatorSubsystem extends SubsystemBase {
             () -> {},
             interrupted -> {},
             () -> (m_elevatorPID.atGoal() && m_shooterPID.atGoal())
-        );
-    }
-
-    public final Command interruptControl() {
-        return new RunCommand(
-            () -> {m_elevatorMotor.set(0.0);},
-            this
         );
     }
 

@@ -73,9 +73,10 @@ public final class Constants {
     );
 
     // Swerve Hardware
-    static public double kWheelRadius = Units.inchesToMeters(3.89);
+    static public double kWheelRadius = Units.inchesToMeters(3.89 / 2.0);
     //static public double kDriveGearReduction = 6.12;
-    static public double kDriveGearReduction = 6.4326; // Yes I know this isn't correct
+    static public double kDriveGearReduction = 6.3; // Yes I know this isn't correct
+    //static public double kDriveGearReduction = 5.8225911761962503497808040294749;
     static public double kTurningGearReduction = 12.8;
     
     // FL, FR, BL, BR

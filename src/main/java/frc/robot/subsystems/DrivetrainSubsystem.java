@@ -240,7 +240,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
         );
       },
       this
-    );
+    ).withName("TeleOpCmd");
   }
 
   public SwerveModule getModule(int offset) {
@@ -263,7 +263,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
                 fieldRelative
                     ? ChassisSpeeds.fromFieldRelativeSpeeds(
                         xSpeed, ySpeed, rot,
-                        //TODO: Test in einseins
+                        //TODO: Test in einsteins
                         (DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Red ? m_poseEstimator.getEstimatedPosition().getRotation().unaryMinus() : m_poseEstimator.getEstimatedPosition().getRotation()))
                     : new ChassisSpeeds(xSpeed, ySpeed, rot),
                 periodSeconds));
@@ -300,27 +300,39 @@ public class DrivetrainSubsystem extends SubsystemBase {
     robotSpeeds.vyMetersPerSecond = -robotSpeeds.vyMetersPerSecond;
     robotSpeeds.omegaRadiansPerSecond = -robotSpeeds.omegaRadiansPerSecond;
 
+    // robotSpeeds.vxMetersPerSecond = MathUtil.clamp(
+    //   robotSpeeds.vxMetersPerSecond, -1.5, 1.5
+    // );
+
+    // robotSpeeds.vyMetersPerSecond = MathUtil.clamp(
+    //   robotSpeeds.vyMetersPerSecond, -1.5, 1.5
+    // );
+
+    // robotSpeeds.omegaRadiansPerSecond = MathUtil.clamp(
+    //   robotSpeeds.omegaRadiansPerSecond, -1.0, 1.0
+    // );
+
     if (DriverStation.isAutonomous()) {
       pathplannerSpeeds = robotSpeeds;
 
       double maxDriveVelocity = m_robotConfig.moduleConfig.maxDriveVelocityMPS;
       double maxRotationalVelocity = m_robotConfig.moduleConfig.maxDriveVelocityRadPerSec;
 
-      // robotSpeeds.vxMetersPerSecond = MathUtil.clamp(
-      //   robotSpeeds.vxMetersPerSecond, -maxDriveVelocity, maxDriveVelocity
-      // );
+      robotSpeeds.vxMetersPerSecond = MathUtil.clamp(
+        robotSpeeds.vxMetersPerSecond, -maxDriveVelocity, maxDriveVelocity
+      );
 
-      // robotSpeeds.vyMetersPerSecond = MathUtil.clamp(
-      //   robotSpeeds.vyMetersPerSecond, -maxDriveVelocity, maxDriveVelocity
-      // );
+      robotSpeeds.vyMetersPerSecond = MathUtil.clamp(
+        robotSpeeds.vyMetersPerSecond, -maxDriveVelocity, maxDriveVelocity
+      );
 
-      // robotSpeeds.omegaRadiansPerSecond = MathUtil.clamp(
-      //   robotSpeeds.omegaRadiansPerSecond, -maxRotationalVelocity, maxRotationalVelocity
-      // );
+      robotSpeeds.omegaRadiansPerSecond = MathUtil.clamp(
+        robotSpeeds.omegaRadiansPerSecond, -maxRotationalVelocity, maxRotationalVelocity
+      );
 
-      // SmartDashboard.putNumber("PathplannerVX", robotSpeeds.vxMetersPerSecond);
-      // SmartDashboard.putNumber("PathplannerVY", robotSpeeds.vyMetersPerSecond);
-      // SmartDashboard.putNumber("PathplannerOmega", robotSpeeds.omegaRadiansPerSecond);
+      SmartDashboard.putNumber("PathplannerVX", robotSpeeds.vxMetersPerSecond);
+      SmartDashboard.putNumber("PathplannerVY", robotSpeeds.vyMetersPerSecond);
+      SmartDashboard.putNumber("PathplannerOmega", robotSpeeds.omegaRadiansPerSecond);
     }
 
     var targetSpeeds = ChassisSpeeds.discretize(robotSpeeds, 0.02);
