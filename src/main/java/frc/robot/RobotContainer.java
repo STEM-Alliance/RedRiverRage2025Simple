@@ -263,10 +263,10 @@ public class RobotContainer {
   */
   private final void registerPathplannerCommands() {
     NamedCommands.registerCommand("AlignLeftInterrupt", new ApriltagOverride(-1, Constants.kAlignXDistanceLeft, Constants.kAlignYDistanceLeft, m_cameras, null));
-    NamedCommands.registerCommand("AlignLeftOffset", new DriveToPoseCommand(kAlignXDistanceLeft, kAlignYDistanceLeft, m_drivetrain));
+    NamedCommands.registerCommand("AlignLeft", new DriveToPoseCommand(kAlignXDistanceLeft, kAlignYDistanceLeft, m_drivetrain));
 
     NamedCommands.registerCommand("AlignRightInterrupt", new ApriltagOverride(-1, Constants.kAlignXDistanceRight, Constants.kAlignYDistanceRight, m_cameras, null));
-    NamedCommands.registerCommand("AlignRightOffset", new DriveToPoseCommand(kAlignXDistanceRight, kAlignYDistanceRight, m_drivetrain));
+    NamedCommands.registerCommand("AlignRight", new DriveToPoseCommand(kAlignXDistanceRight, kAlignYDistanceRight, m_drivetrain));
     NamedCommands.registerCommand("DriveForwardMeters", new DriveForwardMeters(1.55, m_drivetrain));
     NamedCommands.registerCommand("Stop", stopAuto());
 
