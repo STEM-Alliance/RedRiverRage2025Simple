@@ -64,10 +64,10 @@ public class RobotContainer {
   private final CommandJoystick m_operatorButtonPanel = new CommandJoystick(kOperatorButtonPanelPort);
 
   private final DrivetrainSubsystem m_drivetrain = new DrivetrainSubsystem(m_field);
-  private final ElevatorSubsystem m_elevator = new ElevatorSubsystem(12, 10, m_drivetrain::getPose);
+  private final ElevatorSubsystem m_elevator = new ElevatorSubsystem(20, 10, m_drivetrain::getPose);
 
   private final ClimbSubsystem m_climb = new ClimbSubsystem(15, 14, 13, 12);
-  private final IntakeSubsystem m_intake = new IntakeSubsystem(16, 1, 0, m_driverController);
+  private final IntakeSubsystem m_intake = new IntakeSubsystem(33, 1, 0, m_driverController);
 
   // These can be changed back; Joe wanted to make the back of the robot
   // the front since the shooter was getting caught on the cable chain,
@@ -123,8 +123,10 @@ public class RobotContainer {
     })));
 
     m_driverController.rightBumper().onTrue(m_climb.toggleClaw());
-    m_driverController.povUp().whileTrue(new PathPlannerAuto("Choreo Test 3"));
-    m_driverController.povDown().onTrue(new InstantCommand(() -> m_drivetrain.resetPose(Pose2d.kZero)));
+    //m_driverController.povUp().whileTrue(new PathPlannerAuto("Choreo Test 3"));
+    //m_driverController.povDown().onTrue(new InstantCommand(() -> m_drivetrain.resetPose(Pose2d.kZero)));
+    m_driverController.povUp().whileTrue(m_elevator.up());
+    m_driverController.povDown().whileTrue(m_elevator.down());
 
     m_driverController.pov(90).whileTrue(m_elevator.cw());
     m_driverController.pov(270).whileTrue(m_elevator.ccw());

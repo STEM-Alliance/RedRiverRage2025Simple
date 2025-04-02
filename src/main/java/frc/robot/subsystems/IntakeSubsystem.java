@@ -3,7 +3,7 @@ package frc.robot.subsystems;
 import static edu.wpi.first.units.Units.Amps;
 
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
-import com.ctre.phoenix6.hardware.TalonFXS;
+import com.ctre.phoenix6.hardware.TalonFX;
 
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
@@ -18,7 +18,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants;
 
 public class IntakeSubsystem extends SubsystemBase {
-    private final TalonFXS m_intakeMotor;
+    private final TalonFX m_intakeMotor;
     private final TofDistanceSubsystem m_enterSensor;
     private final TofDistanceSubsystem m_exitSensor;
     private boolean m_previousCoralDetected = false;
@@ -27,7 +27,7 @@ public class IntakeSubsystem extends SubsystemBase {
     private final CommandXboxController m_controller;
 
     public IntakeSubsystem(int intakeMotorID, int enterSensorID, int exitSensorID, CommandXboxController controller) {
-        m_intakeMotor = new TalonFXS(intakeMotorID);
+        m_intakeMotor = new TalonFX(intakeMotorID);
         m_enterSensor = new TofDistanceSubsystem(enterSensorID);
         m_exitSensor = new TofDistanceSubsystem(exitSensorID);
         m_controller = controller;
@@ -78,7 +78,7 @@ public class IntakeSubsystem extends SubsystemBase {
 
     public final Command startIntaking() {
         return new FunctionalCommand(
-            () -> {m_intakeMotor.set(0.2);}, //System.out.println("Set 1.0");},
+            () -> {m_intakeMotor.set(0.15);}, //System.out.println("Set 1.0");},
             () -> {},//System.out.println("Intaking...");},
             interrupted -> {m_intakeMotor.set(0.0);},
             () -> checkAndStopIntake(),
@@ -88,7 +88,7 @@ public class IntakeSubsystem extends SubsystemBase {
 
     public final Command runIntake() {
         return new FunctionalCommand(
-            () -> {m_intakeMotor.set(0.2);},
+            () -> {m_intakeMotor.set(0.15);},
             () -> {},
             interrupted -> {m_intakeMotor.set(0.0);},
             () -> false
@@ -104,7 +104,7 @@ public class IntakeSubsystem extends SubsystemBase {
 
     public final Command startShooting() {
         return new InstantCommand(
-            () -> {m_intakeMotor.set(1.0);}, //System.out.println("Set 1.0");},
+            () -> {m_intakeMotor.set(0.6);}, //System.out.println("Set 1.0");},
             this
         );
     }

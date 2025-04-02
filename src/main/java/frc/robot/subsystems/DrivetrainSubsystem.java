@@ -264,7 +264,9 @@ public class DrivetrainSubsystem extends SubsystemBase {
                     ? ChassisSpeeds.fromFieldRelativeSpeeds(
                         xSpeed, ySpeed, rot,
                         //TODO: Test in einsteins
-                        (DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Red ? m_poseEstimator.getEstimatedPosition().getRotation().unaryMinus() : m_poseEstimator.getEstimatedPosition().getRotation()))
+                        DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue ?
+                          m_poseEstimator.getEstimatedPosition().getRotation() :
+                          m_poseEstimator.getEstimatedPosition().getRotation().plus(Rotation2d.kPi))
                     : new ChassisSpeeds(xSpeed, ySpeed, rot),
                 periodSeconds));
     SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, Constants.kMaxSpeed);

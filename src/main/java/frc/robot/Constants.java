@@ -103,7 +103,15 @@ public final class Constants {
     /********************************************
      * Elevator and Shooter
      *******************************************/
-    static public double kElevatorKp = 0.3;
+    static public double kElevatorKp = 0.1;
+    static public double kElevatorKi = 0;
+    //static public double kElevatorMotorRotationsToInches = 1.484375;
+    static public double kElevatorMotorRotationsToInches = 1;
+    static public double kElevatorMaxDrive = 0.8;
+    static public double kElevatorMaxVelocity = 70;
+    static public double kElevatorMaxAcceleration = 70;
+    static public double kElevatorDistanceOffset = 27.2;
+
     static public enum kElevatorSetpoints {
         L4      (57.5),
         L3      (33),
@@ -154,8 +162,6 @@ public final class Constants {
         // public double getAsDouble() {return m_shooterSetpoints;}
     }
 
-    static public double kElevatorMaxVelocity = 50;
-    static public double kElevatorMaxAcceleration = kElevatorMaxVelocity/1.0;
     static public double kShooterMaxVelocity = 2;
     static public double kShooterMaxAcceleration = kShooterMaxVelocity/0.15;
 
